@@ -57,7 +57,7 @@ int main() {
         }
 
 
-        std::string name="/home/toni/Escritorio/cube_";
+        std::string name="/home/penalvea/Escritorio/cube_";
         std::ostringstream ss1;
         ss1<<i;
         name=name+ss1.str()+"_";
