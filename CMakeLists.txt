@@ -42,5 +42,8 @@ target_link_libraries(rotate_pointcloud ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_executable(object_dataset_generator src/object_dataset_generator_node.cpp)
 target_link_libraries(object_dataset_generator ${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
-#add_executable(generate_dataset src/generate_dataset.cpp)
-#target_link_libraries(generate_dataset ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_executable(object_dataset_generator_no_camera src/object_dataset_generator_node_no_camera.cpp)
+target_link_libraries(object_dataset_generator_no_camera ${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_executable(read_mat_from_file src/read_mat_from_file.cpp)
+target_link_libraries(read_mat_from_file ${catkin_LIBRARIES} ${PCL_LIBRARIES})

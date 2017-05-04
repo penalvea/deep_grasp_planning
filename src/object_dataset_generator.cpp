@@ -1,12 +1,13 @@
 #include "deep_grasp_planning/object_dataset_generator.h"
 
-ObjectDatasetGenerator::ObjectDatasetGenerator(std::string general_file, std::string folder)
+ObjectDatasetGenerator::ObjectDatasetGenerator(std::string general_file, std::string folder, int side_matrix)
 {
   cont_=0;
   std:srand(std::time(0));
   general_.open(general_file.c_str(), std::ofstream::out | std::ofstream::trunc);
   general_<<"id shape training/validation x/radius y/height z rot_x rot_y rot_z camera_trans_x camera_trans_y camera_trans_z camera_rot_x camera_rot_y camera_rot_z\n";
   folder_=folder;
+  side_matrix_=side_matrix;
 }
 
 
@@ -20,9 +21,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObjectDatasetGenerator::generateCube(float x
         cont++;
         cloud->width=cont;
         cloud->points.resize(cont);
-        cloud->points[cont-1].x=25+i;
-        cloud->points[cont-1].y=25+j;
-        cloud->points[cont-1].z=25+k;
+        cloud->points[cont-1].x=side_matrix_/2+i;
+        cloud->points[cont-1].y=side_matrix_/2+j;
+        cloud->points[cont-1].z=side_matrix_/2+k;
       }
     }
   }
@@ -33,15 +34,15 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObjectDatasetGenerator::generateCylinder(flo
   cloud->width=1;
   int cont=0;
   for(float h=-height/2; h<height/2; h+=0.25){
-    for(float i=0; i<50; i+=0.25){
-      for(float j=0; j<50; j+=0.25){
-        if(std::sqrt(((i-25)*(i-25))+((j-25)*(j-25)))<=radius){
+    for(float i=0; i<side_matrix_; i+=0.25){
+      for(float j=0; j<side_matrix_; j+=0.25){
+        if(std::sqrt(((i-side_matrix_/2)*(i-side_matrix_/2))+((j-side_matrix_/2)*(j-side_matrix_/2)))<=radius){
           cont++;
           cloud->height=cont;
           cloud->points.resize(cont);
           cloud->points[cont-1].x=i;
           cloud->points[cont-1].y=j;
-          cloud->points[cont-1].z=25+h;
+          cloud->points[cont-1].z=side_matrix_/2+h;
         }
 
       }
@@ -56,15 +57,15 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObjectDatasetGenerator::generateCone(float r
   float angle=std::atan(float(radius)/height);
   for(float h=-height/2; h<height/2; h+=0.25){
     float radius_height=std::tan(angle)*((height/2)+h);
-    for(float i=0; i<50; i+=0.25){
-      for(float j=0; j<50; j+=0.25){
-        if(std::sqrt(((i-25)*(i-25))+((j-25)*(j-25)))<=radius_height){
+    for(float i=0; i<side_matrix_; i+=0.25){
+      for(float j=0; j<side_matrix_; j+=0.25){
+        if(std::sqrt(((i-side_matrix_/2)*(i-side_matrix_/2))+((j-side_matrix_/2)*(j-side_matrix_/2)))<=radius_height){
           cont++;
           cloud->height=cont;
           cloud->points.resize(cont);
           cloud->points[cont-1].x=i;
           cloud->points[cont-1].y=j;
-          cloud->points[cont-1].z=25+h;
+          cloud->points[cont-1].z=side_matrix_/2+h;
 
         }
 
@@ -99,9 +100,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObjectDatasetGenerator::rotatePointCloud(pcl
   rot.rotate(Eigen::AngleAxisf(rot_y, Eigen::Vector3f::UnitY()));
   rot.rotate(Eigen::AngleAxisf(rot_z, Eigen::Vector3f::UnitZ()));
   Eigen::Affine3f trans=Eigen::Affine3f::Identity();
-  trans.translation() << -25, -25, -25;
+  trans.translation() << -side_matrix_/2, -side_matrix_/2, -side_matrix_/2;
   Eigen::Affine3f trans2=Eigen::Affine3f::Identity();
-  trans2.translation() << 25, 25, 25;
+  trans2.translation() << side_matrix_/2, side_matrix_/2, side_matrix_/2;
   pcl::PointCloud<pcl::PointXYZ>::Ptr rotated_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
   pcl::transformPointCloud(*cloud, *rotated_cloud, trans);
   pcl::transformPointCloud(*rotated_cloud, *rotated_cloud, rot);
@@ -118,11 +119,11 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObjectDatasetGenerator::translatePointCloud(
 }
 std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::getMatrix(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
   std::vector< std::vector< std::vector< int > > > mat;
-  for(int l=0; l<50; l++){
+  for(int l=0; l<side_matrix_; l++){
     std::vector<std::vector<int> > vec_vec;
-    for(int m=0; m<50; m++){
+    for(int m=0; m<side_matrix_; m++){
       std::vector<int> vec;
-      for(int n=0; n<50; n++){
+      for(int n=0; n<side_matrix_; n++){
         vec.push_back(0);
       }
       vec_vec.push_back(vec);
@@ -130,7 +131,7 @@ std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::getMatr
     mat.push_back(vec_vec);
   }
   for(int i=0; i<cloud->size(); i++){
-    if(cloud->points[i].x>=50 || cloud->points[i].x<0 || cloud->points[i].y>=50 || cloud->points[i].y<0 || cloud->points[i].z>=50 || cloud->points[i].z<0){
+    if(cloud->points[i].x>=side_matrix_ || cloud->points[i].x<0 || cloud->points[i].y>=side_matrix_ || cloud->points[i].y<0 || cloud->points[i].z>=side_matrix_ || cloud->points[i].z<0){
       std::cout<<"Error rotation, out of matrix: "<<cloud->points[i].x<<" "<<cloud->points[i].y<<" "<<cloud->points[i].z<<std::endl;
       mat.resize(0);
       return mat;
@@ -142,11 +143,11 @@ std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::getMatr
 }
 std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::getSideMatrix(std::vector< std::vector <std::vector< int > > > mat){
   std::vector< std::vector <std::vector< int > > > side_mat;
-  for(int l=0; l<50; l++){
+  for(int l=0; l<side_matrix_; l++){
     std::vector<std::vector<int> > vec_vec;
-    for(int m=0; m<50; m++){
+    for(int m=0; m<side_matrix_; m++){
       std::vector<int> vec;
-      for(int n=0; n<50; n++){
+      for(int n=0; n<side_matrix_; n++){
         vec.push_back(0);
       }
       vec_vec.push_back(vec);
@@ -172,7 +173,7 @@ std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::getSide
 }
 std::vector<int> ObjectDatasetGenerator::getDisplacement(std::vector< std::vector <std::vector< int > > > mat)
 {
-  int max_x=0, max_y=0, max_z=0, min_x=50, min_y=50, min_z=50;
+  int max_x=0, max_y=0, max_z=0, min_x=side_matrix_, min_y=side_matrix_, min_z=side_matrix_;
   for(int i=0; i<mat.size(); i++){
     for(int j=0; j<mat[0].size(); j++){
       for(int k=0; k<mat[0][0].size(); k++){
@@ -193,8 +194,8 @@ std::vector<int> ObjectDatasetGenerator::getDisplacement(std::vector< std::vecto
       }
     }
   }
-  int disp_x=25-((max_x+min_x)/2);
-  int disp_y=25-((max_y+min_y)/2);
+  int disp_x=side_matrix_/2-((max_x+min_x)/2);
+  int disp_y=side_matrix_/2-((max_y+min_y)/2);
   //int disp_z=((max_z+min_z)/2)-25;
   int disp_z=-min_z;
   std::vector<int> disp;
@@ -205,11 +206,11 @@ std::vector<int> ObjectDatasetGenerator::getDisplacement(std::vector< std::vecto
 }
 std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::moveMatrix(std::vector< std::vector <std::vector< int > > > mat, std::vector<int> disp){
   std::vector< std::vector <std::vector< int > > > moved_mat;
-  for(int l=0; l<50; l++){
+  for(int l=0; l<side_matrix_; l++){
     std::vector<std::vector<int> > vec_vec;
-    for(int m=0; m<50; m++){
+    for(int m=0; m<side_matrix_; m++){
       std::vector<int> vec;
-      for(int n=0; n<50; n++){
+      for(int n=0; n<side_matrix_; n++){
         vec.push_back(0);
       }
       vec_vec.push_back(vec);
@@ -220,7 +221,7 @@ std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::moveMat
     for(int j=0; j<mat[0].size(); j++){
       for(int k=0; k<mat[0][0].size(); k++){
         if(mat[i][j][k]==1){
-          if(i+disp[0]>49 || i+disp[0]<0 || j+disp[1]>49 || j+disp[1]<0 || k+disp[2]>49 || k+disp[2]<0){
+          if(i+disp[0]>=side_matrix_ || i+disp[0]<0 || j+disp[1]>=side_matrix_ || j+disp[1]<0 || k+disp[2]>=side_matrix_ || k+disp[2]<0){
             std::cout<<"Error move matrix, out of matrix: "<<i+disp[0]<<" "<<j+disp[1]<<" "<<k+disp[2]<<std::endl;
             moved_mat.resize(0);
             return moved_mat;
@@ -310,8 +311,33 @@ std::vector< std::vector< std::vector <std::vector< int > > > > ObjectDatasetGen
 
 
 
-  mats.push_back(mat_arm);
+
   mats.push_back(side_mat_arm);
+  mats.push_back(mat_arm);
+  return mats;
+}
+
+std::vector< std::vector< std::vector <std::vector< int > > > > ObjectDatasetGenerator::generateMatsNoCamera(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, float rand_x, float rand_y, float rand_z){
+  std::vector< std::vector< std::vector <std::vector< int > > > > mats;
+
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_rotated=rotatePointCloud(cloud, rand_x, rand_y, rand_z);
+
+  std::vector< std::vector <std::vector< int > > > mat=getMatrix(cloud_rotated);
+  if(mat.size()==0){
+    mats.resize(0);
+    return mats;
+  }
+
+  std::vector< std::vector <std::vector< int > > > side_mat=getSideMatrix(mat);
+  std::vector<int> displacement=getDisplacement(side_mat);
+
+
+
+
+
+  mats.push_back(moveMatrix(side_mat, displacement));
+  mats.push_back(moveMatrix(mat, displacement));
   return mats;
 }
 
@@ -501,6 +527,169 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
               general_<<cont_<<" "<<"sphere training"<<" "<<radius<<" "<<"-1"<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<" "<<camera_rot_x<<" "<<camera_rot_y<<" "<<camera_rot_z<<" "<<camera_trans_x<<" "<<camera_trans_y<<" "<<camera_trans_z<<std::endl;
             else
               general_<<cont_<<" "<<"sphere validation"<<" "<<radius<<" "<<"-1"<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<" "<<camera_rot_x<<" "<<camera_rot_y<<" "<<camera_rot_z<<" "<<camera_trans_x<<" "<<camera_trans_y<<" "<<camera_trans_z<<std::endl;
+
+            std::ostringstream id;
+            id<<cont_;
+
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            std::cout<<cont_<<" sphere"<<std::endl;
+          }
+        }
+      }
+    }
+  }
+
+}
+
+void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes, int cylinders, int cones, int spheres, int orientations, bool training, std::string iterator){
+  std::string training_validation;
+  if(training){
+    training_validation="/training";
+  }
+  else{
+    training_validation="/validation";
+  }
+
+  for(int i=0; i<num_objects/(cubes+cylinders+cones+spheres)/orientations; i++){
+    bool good=false;
+    while(!good){
+
+      for (int cube=0; cube<cubes; cube++){
+        float x=(((std::rand()%100)/100.0)*16)+4;
+        float y=(((std::rand()%100)/100.0)*16)+4;
+        float z=(((std::rand()%100)/100.0)*11)+4;
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cube_cloud=generateCube(x,y,z);
+
+        for(int orientation=0; orientation<orientations; orientation++){
+
+
+          float rand_x=(std::rand()%1000)/1000.0*3.1415;
+          float rand_y=(std::rand()%1000)/1000.0*3.1415;
+          float rand_z=(std::rand()%1000)/1000.0*3.1415;
+
+
+          std::vector< std::vector< std::vector <std::vector< int > > > > mats=generateMatsNoCamera(cube_cloud, rand_x, rand_y, rand_z);
+          if(mats.size()!=0){
+            good=true;
+
+
+            cont_++;
+            if(training)
+              general_<<cont_<<" "<<"cube trainig"<<" "<<x<<" "<<y<<" "<<z<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+            else
+              general_<<cont_<<" "<<"cube validation"<<" "<<x<<" "<<y<<" "<<z<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            std::ostringstream id;
+            id<<cont_;
+
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            std::cout<<cont_<<" cube"<<std::endl;
+          }
+        }
+      }
+
+    }
+
+    for (int cylinder=0; cylinder<cylinders; cylinder++){
+      bool good=false;
+      while(!good){
+        float radius=(((std::rand()%100)/100.0)*6)+2;
+        float height=(((std::rand()%100)/100.0)*16)+4;
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cylinder_cloud=generateCylinder(radius,height);
+        for(int orientation=0; orientation<orientations; orientation++){
+
+          float rand_x=(std::rand()%1000)/1000.0*3.1415;
+          float rand_y=(std::rand()%1000)/1000.0*3.1415;
+          float rand_z=(std::rand()%1000)/1000.0*3.1415;
+
+
+          std::vector< std::vector< std::vector <std::vector< int > > > > mats=generateMatsNoCamera(cylinder_cloud, rand_x, rand_y, rand_z);
+          if(mats.size()!=0){
+            good=true;
+            cont_++;
+            if(training)
+              general_<<cont_<<" "<<"cylinder training"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+            else
+              general_<<cont_<<" "<<"cylinder validation"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            std::ostringstream id;
+            id<<cont_;
+
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            std::cout<<cont_<<" cylinder"<<std::endl;
+          }
+        }
+
+
+      }
+
+    }
+    for (int cone=0; cone<cones; cone++){
+      bool good=false;
+      while(!good){
+        float radius=(((std::rand()%100)/100.0)*6)+2;
+        float height=(((std::rand()%100)/100.0)*16)+4;
+
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cone_cloud=generateCone(radius,height);
+        for(int orientation=0; orientation<orientations; orientation++){
+
+
+          float rand_x=(std::rand()%1000)/1000.0*3.1415;
+          float rand_y=(std::rand()%1000)/1000.0*3.1415;
+          float rand_z=(std::rand()%1000)/1000.0*3.1415;
+
+
+
+          std::vector< std::vector< std::vector <std::vector< int > > > > mats=generateMatsNoCamera(cone_cloud, rand_x, rand_y, rand_z);
+          if(mats.size()!=0){
+            good=true;
+            cont_++;
+            if(training)
+              general_<<cont_<<" "<<"cone training"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+            else
+              general_<<cont_<<" "<<"cone validation"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            std::ostringstream id;
+            id<<cont_;
+
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            std::cout<<cont_<<" cone"<<std::endl;
+          }
+        }
+
+      }
+    }
+
+
+    for (int sphere=0; sphere<spheres; sphere++){
+      bool good=false;
+      while(!good){
+        float radius=(((std::rand()%100)/100.0)*6)+2;
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr sphere_cloud=generateSphere(radius);
+        for(int orientation=0; orientation<orientations; orientation++){
+
+
+          float rand_x=(std::rand()%1000)/1000.0*3.1415;
+          float rand_y=(std::rand()%1000)/1000.0*3.1415;
+          float rand_z=(std::rand()%1000)/1000.0*3.1415;
+
+
+          std::vector< std::vector< std::vector <std::vector< int > > > > mats=generateMatsNoCamera(sphere_cloud, rand_x, rand_y, rand_z);
+          if(mats.size()!=0){
+            good=true;
+            cont_++;
+            if(training)
+              general_<<cont_<<" "<<"sphere training"<<" "<<radius<<" "<<"-1"<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+            else
+              general_<<cont_<<" "<<"sphere validation"<<" "<<radius<<" "<<"-1"<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
 
             std::ostringstream id;
             id<<cont_;
