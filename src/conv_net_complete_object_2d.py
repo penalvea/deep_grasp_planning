@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 import time
 import datetime
-import read_dataset
+import read_dataset_2d
 import matplotlib.pyplot as plt
 
 
@@ -40,15 +40,15 @@ def bias_variable(shape):
 
 def convPoolLayer_Red(inp, size, layersIn, layersOut,sizeRed, name):
     with tf.name_scope(name):
-        W_conv = weight_variable([size, size, size, layersIn, layersOut])
+        W_conv = weight_variable([size, size, layersIn, layersOut])
         b_conv = bias_variable([layersOut])
 
         #tf.summary.histogram(name + "/Filters",W_conv)
 
-        preactivate=tf.nn.conv3d(inp, W_conv, strides= [1,1,1,1,1], padding='SAME')
+        preactivate=tf.nn.conv2d(inp, W_conv, strides= [1,1,1,1], padding='SAME')
         preactivate=tf.nn.bias_add(preactivate, b_conv)
-        h_conv = tf.nn.relu(preactivate, 'activation')
-        h_pool = tf.nn.max_pool3d(h_conv,ksize=[1, sizeRed, sizeRed, sizeRed, 1], strides=[1, sizeRed, sizeRed, sizeRed, 1], padding='SAME')
+        h_conv = tf.nn.crelu(preactivate, 'activation')
+        h_pool = tf.nn.max_pool(h_conv,ksize=[1, sizeRed, sizeRed, 1], strides=[1, sizeRed, sizeRed, 1], padding='SAME')
 
     return h_pool
 
@@ -61,28 +61,12 @@ def convPoolLayer(inp, size, layersIn, layersOut, name):
             #tf.summary.histogram(name + "/Filters",W_conv)
 
 
-            preactivate=tf.nn.conv3d(inp, W_conv, strides= [1,2,2,2,1], padding='SAME')
+            preactivate=tf.nn.conv2d(inp, W_conv, strides= [1,1,1,1], padding='SAME')
             preactivate=tf.nn.bias_add(preactivate, b_conv)
             h_conv = tf.nn.relu(preactivate, 'activation')
-            h_pool = tf.nn.max_pool3d(h_conv,ksize=[1, size, size, size, 1],strides=[1, 1, 1, 1, 1], padding='SAME')
+            h_pool = tf.nn.max_pool(h_conv,ksize=[1, size, size, 1],strides=[1, 1, 1, 1], padding='SAME')
 
         return h_pool
-
-
-def deconvPoolLayer(inp, size, layersIn, layersOut, name, w, h, d):
-    with tf.name_scope(name):
-        W_conv = weight_variable([size, size, size, layersOut, layersIn])
-        b_conv = bias_variable([layersOut])
-
-        # tf.summary.histogram(name + "/Filters",W_conv)
-
-        shape = inp.get_shape().as_list()
-
-        preactivate = tf.nn.conv3d_transpose(inp, W_conv, output_shape=[4, w, h, d, layersOut], strides=[1, 2, 2, 2, 1], padding='SAME')
-        preactivate = tf.nn.bias_add(preactivate, b_conv)
-        h_conv = tf.nn.relu(preactivate, 'activation')
-        #h_pool = tf.nn.max_pool3d(h_conv, ksize=[1, size, size, size, 1], strides=[1, 1, 1, 1, 1], padding='SAME')
-    return h_conv
 
 
 def denselyConnLayer(inp, layersIn, layersOut, name):
@@ -110,27 +94,22 @@ def denselyConnLayerLineal(inp, layersIn, layersOut, name):
 
 
 def inference_4layers(inp):
-    print("using 4 layers inference")
-    conv1 = convPoolLayer_Red(inp, 5, 1, 20, 5, 'conv1')
-    conv2 = convPoolLayer_Red(conv1, 3, 20, 40, 3, 'conv2')
-    #conv3 = convPoolLayer_Red(conv2, 3, 40, 80, 3, 'conv3')
-    #conv4 = convPoolLayer (conv3, 3, 32, 64, 'conv4')
-    print conv2
+    #print("using 4 layers inference")
+    conv1 = convPoolLayer_Red (inp, 5, 1, 100, 5, 'conv1')
+    #print conv1
+    #conv2 = convPoolLayer_Red (conv1, 3, 30, 50, 3, 'conv2')
     #print conv2
-    #print conv3
+    #conv3 = convPoolLayer_Red (conv2, 3, 100, 150, 3,'conv3')
+    #conv4 = convPoolLayer (conv3, 3, 32, 64, 'conv4')
 
-    #deconv1 = deconvPoolLayer(conv1, 3, 50, 1, 'deconv1', 30, 30, 30)
-    #print deconv1
-    #deconv2 = deconvPoolLayer(deconv1, 3, 40, 20, 'deconv2', 10, 10, 10)
-    #print deconv2
-    #deconv3 = deconvPoolLayer(deconv2, 3, 20, 1, 'deconv3', 30, 30, 30)
-    #print deconv3
+    print conv1
 
 
-    #dens1 = denselyConnLayer(conv3, 2*2*2*80, 1000, 'dens1')
-    dens2 = denselyConnLayerLineal(conv2, 2*2*2*40, height*width*depth, 'dens2')
+    #dens1 = denselyConnLayer(inp, height*width*depth, 2000, 'dens1')
+    #dens2 = denselyConnLayerLineal(conv1, height*width*depth, 'dens2')
 
-    res=tf.reshape(dens2, [-1, height, width, depth, 1])
+
+    res=tf.reshape(conv1, [-1, height, width, depth, 1])
 
     return res
 
@@ -146,7 +125,7 @@ def inference_4layersNoRed(inp):
 
 
 
-[training, validation]=read_dataset.readNextDataSet(dataset_path, folder, height, width, depth)
+[training, validation]=read_dataset_2d.readNextDataSet(dataset_path, folder, height, width, depth)
 train_objects=training.num_examples
 val_objects=validation.num_examples
 
@@ -167,9 +146,8 @@ res=inference_4layers(x_input)
 
 # Y Final
 with tf.name_scope("finalY") as scope:
-    #y_result=tf.reshape(res,[-1, height,width,depth,1])
-    print res
-    y_result=res
+    y_result=tf.reshape(res,[-1, height,width,depth,1])
+    #y_result=res
 
 #Loss Function
 #with tf.name_scope("loss_function"):
@@ -190,7 +168,6 @@ with tf.name_scope("finalY") as scope:
     #loss_function=tf.reduce_sum(diff)
 
     #loss_function=-tf.reduce_sum(y_*tf.log(y_result + 1e-10))
-
     #loss_function=tf.reduce_mean(tf.losses.sigmoid_cross_entropy(y_, y_result))
 
 
@@ -207,10 +184,12 @@ with tf.name_scope("finalY") as scope:
     y_change = tf.reshape(y_, [-1, height*width*depth])
     y_result_change=tf.reshape(y_result, [-1, height*width*depth])
 
-
+    y_target= tf.reshape(y_,[-1, height * width * depth])
     #loss_function=((tf.reduce_sum(tf.abs(y_change*tf.abs((1-y_result_change))))))+tf.reduce_sum(tf.abs((1-y_change)*tf.abs(y_result_change)))
+    loss_function=tf.reduce_mean(tf.square(res - y_target))
 
-    loss_function=tf.reduce_sum(tf.losses.absolute_difference(y_change, y_result_change))
+
+    #loss_function=tf.reduce_sum(tf.losses.absolute_difference(y_change, y_result_change))
     bad_results=tf.reduce_sum(tf.abs(tf.subtract(y_round, y_)))
 
 
@@ -287,8 +266,8 @@ while(now<run_until):
                         unos+=1
                     #if int(batch[1][0][a][b][c][0])==1:
                         #print (int(batch[1][0][a][b][c][0]), rounded[0][a][b][c][0], result[0][a][b][c][0])
-                    value = batch[0][0][a][b][c][0]
-                    aux1.write(str(int(batch[0][0][a][b][c][0])) + " ")
+                    #value = batch[0][0][a][b][c][0]
+                    #aux1.write(str(int(batch[0][0][a][b][c][0])) + " ")
                     aux2.write(str(int(batch[1][0][a][b][c][0])) + " ")
                     aux3.write(str(int(rounded[0][a][b][c][0])) + " ")
                     #print result[0][a][b][c][0]
