@@ -8,8 +8,31 @@ ObjectDatasetGenerator::ObjectDatasetGenerator(std::string general_file, std::st
   general_<<"id shape training/validation x/radius y/height z rot_x rot_y rot_z camera_trans_x camera_trans_y camera_trans_z camera_rot_x camera_rot_y camera_rot_z\n";
   folder_=folder;
   side_matrix_=side_matrix;
+
+  x_max_=20-4;
+  x_min_= 4;
+  y_max_=20-4;
+  y_min_=4;
+  z_max_=15-4;
+  z_min_=4;
+  height_max_=20-4;
+  height_min_=4;
+  radius_max_=8-2;
+  radius_min_=2;
 }
 
+void ObjectDatasetGenerator::change_sizes(int x_max, int x_min, int y_max, int y_min, int z_max, int z_min, int height_max, int height_min, int radius_max, int radius_min){
+  x_max_=x_max-x_min;
+  x_min_= x_min;
+  y_max_=y_max-y_min;
+  y_min_=y_min;
+  z_max_=z_max-z_min;
+  z_min_=z_min;
+  height_max_=height_max-height_min;
+  height_min_=height_min;
+  radius_max_=radius_max-radius_min;
+  radius_min_=radius_min;
+}
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr ObjectDatasetGenerator::generateCube(float x, float y, float z){
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
@@ -354,6 +377,10 @@ void ObjectDatasetGenerator::writeMat(std::vector< std::vector <std::vector< int
   file.close();
 }
 
+
+
+
+
 void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cylinders, int cones, int spheres, int orientations, bool training, std::string iterator){
   std::string training_validation;
   if(training){
@@ -368,9 +395,9 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
 
   for(int i=0; i<num_objects/(cubes+cylinders+cones+spheres)/orientations; i++){
     for (int cube=0; cube<cubes; cube++){
-      float x=(((std::rand()%100)/100.0)*16)+4;
-      float y=(((std::rand()%100)/100.0)*16)+4;
-      float z=(((std::rand()%100)/100.0)*11)+4;
+      float x=(((std::rand()%100)/100.0)*x_max_)+x_min_;
+      float y=(((std::rand()%100)/100.0)*y_max_)+y_min_;
+      float z=(((std::rand()%100)/100.0)*z_max_)+z_min_;
 
       pcl::PointCloud<pcl::PointXYZ>::Ptr cube_cloud=generateCube(x,y,z);
 
@@ -416,8 +443,8 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
     }
 
     for (int cylinder=0; cylinder<cylinders; cylinder++){
-      float radius=(((std::rand()%100)/100.0)*6)+2;
-      float height=(((std::rand()%100)/100.0)*16)+4;
+      float radius=(((std::rand()%100)/100.0)*radius_max_)+radius_min_;
+      float height=(((std::rand()%100)/100.0)*height_max_)+height_min_;
 
       pcl::PointCloud<pcl::PointXYZ>::Ptr cylinder_cloud=generateCylinder(radius,height);
       for(int orientation=0; orientation<orientations; orientation++){
@@ -459,8 +486,8 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
 
     }
     for (int cone=0; cone<cones; cone++){
-      float radius=(((std::rand()%100)/100.0)*6)+2;
-      float height=(((std::rand()%100)/100.0)*16)+4;
+      float radius=(((std::rand()%100)/100.0)*radius_max_)+radius_min_;
+      float height=(((std::rand()%100)/100.0)*height_max_)+height_min_;
 
 
       pcl::PointCloud<pcl::PointXYZ>::Ptr cone_cloud=generateCone(radius,height);
@@ -503,7 +530,7 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
 
 
     for (int sphere=0; sphere<spheres; sphere++){
-      float radius=(((std::rand()%100)/100.0)*6)+2;
+      float radius=(((std::rand()%100)/100.0)*radius_max_)+radius_min_;
 
       pcl::PointCloud<pcl::PointXYZ>::Ptr sphere_cloud=generateSphere(radius);
       for(int orientation=0; orientation<orientations; orientation++){
@@ -563,9 +590,9 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
     for (int cube=0; cube<cubes; cube++){
       bool good=false;
       while(!good){
-        float x=(((std::rand()%100)/100.0)*16)+4;
-        float y=(((std::rand()%100)/100.0)*16)+4;
-        float z=(((std::rand()%100)/100.0)*11)+4;
+        float x=(((std::rand()%100)/100.0)*x_max_)+x_min_;
+        float y=(((std::rand()%100)/100.0)*y_max_)+y_min_;
+        float z=(((std::rand()%100)/100.0)*z_max_)+z_min_;
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cube_cloud=generateCube(x,y,z);
 
@@ -603,8 +630,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
     for (int cylinder=0; cylinder<cylinders; cylinder++){
       bool good=false;
       while(!good){
-        float radius=(((std::rand()%100)/100.0)*6)+2;
-        float height=(((std::rand()%100)/100.0)*16)+4;
+        float radius=(((std::rand()%100)/100.0)*radius_max_)+radius_min_;
+        float height=(((std::rand()%100)/100.0)*height_max_)+height_min_;
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cylinder_cloud=generateCylinder(radius,height);
         for(int orientation=0; orientation<orientations; orientation++){
@@ -639,8 +666,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
     for (int cone=0; cone<cones; cone++){
       bool good=false;
       while(!good){
-        float radius=(((std::rand()%100)/100.0)*6)+2;
-        float height=(((std::rand()%100)/100.0)*16)+4;
+        float radius=(((std::rand()%100)/100.0)*radius_max_)+radius_min_;
+        float height=(((std::rand()%100)/100.0)*height_max_)+height_min_;
 
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cone_cloud=generateCone(radius,height);
@@ -678,7 +705,7 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
     for (int sphere=0; sphere<spheres; sphere++){
       bool good=false;
       while(!good){
-        float radius=(((std::rand()%100)/100.0)*6)+2;
+        float radius=(((std::rand()%100)/100.0)*radius_max_)+radius_min_;
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr sphere_cloud=generateSphere(radius);
         for(int orientation=0; orientation<orientations; orientation++){

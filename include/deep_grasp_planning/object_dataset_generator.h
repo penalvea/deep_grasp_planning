@@ -16,10 +16,12 @@ class ObjectDatasetGenerator
   std::string folder_;
   pcl::visualization::PCLVisualizer::Ptr viewer_;
   int side_matrix_;
+  int x_max_, x_min_, y_max_, y_min_, z_max_, z_min_, height_max_, height_min_, radius_max_, radius_min_;
 public:
   ObjectDatasetGenerator(std::string general_file, std::__cxx11::string folder, int side_matrix);
   void generateDataset(int num_objects, int cubes, int cylinders, int cones, int spheres, int orientations, bool training, std::string iterator);
   void generateDatasetNoCamera(int num_objects, int cubes, int cylinders, int cones, int spheres, int orientations, bool training, std::string iterator);
+  void change_sizes(int x_max, int x_min, int y_max, int y_min, int z_max, int z_min, int height_max, int height_min, int radius_max, int radius_min);
 
 private:
   pcl::PointCloud<pcl::PointXYZ>::Ptr generateCube(float x, float y, float z);
@@ -38,6 +40,7 @@ private:
   std::vector< std::vector< std::vector <std::vector< int > > > > generateMats(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, float rand_x, float rand_y, float rand_z, float camera_rot_x, float camera_rot_y, float camera_rot_z, float camera_trans_x, float camera_trans_y, float camera_trans_z);
   std::vector< std::vector< std::vector <std::vector< int > > > > generateMatsNoCamera(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, float rand_x, float rand_y, float rand_z);
   void writeMat(std::vector< std::vector <std::vector< int > > > mat, const std::string file_name);
+
 
 
 

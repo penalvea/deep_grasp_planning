@@ -45,5 +45,8 @@ target_link_libraries(object_dataset_generator ${PROJECT_NAME} ${catkin_LIBRARIE
 add_executable(object_dataset_generator_no_camera src/object_dataset_generator_node_no_camera.cpp)
 target_link_libraries(object_dataset_generator_no_camera ${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
+add_executable(object_dataset_generator_no_camera_big src/object_dataset_generator_node_no_camera_big.cpp)
+target_link_libraries(object_dataset_generator_no_camera_big ${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
 add_executable(read_mat_from_file src/read_mat_from_file.cpp)
 target_link_libraries(read_mat_from_file ${catkin_LIBRARIES} ${PCL_LIBRARIES})
