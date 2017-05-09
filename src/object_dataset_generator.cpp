@@ -78,10 +78,10 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObjectDatasetGenerator::generateSphere(float
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   cloud->width=1;
   int cont=0;
-  for (float i = 0; i < 50; i+=0.25) {
-    for (float j = 0; j < 50; j+=0.25) {
-      for (float k = 0; k < 50; k+=0.25) {
-        if (std::sqrt(((i - 25) * (i - 25)) + ((j - 25) * (j - 25)) + ((k - 25) * (k - 25))) <= radius) {
+  for (float i = 0; i < side_matrix_; i+=0.25) {
+    for (float j = 0; j < side_matrix_; j+=0.25) {
+      for (float k = 0; k < side_matrix_; k+=0.25) {
+        if (std::sqrt(((i - side_matrix_/2) * (i - side_matrix_/2)) + ((j - side_matrix_/2) * (j - side_matrix_/2)) + ((k - side_matrix_/2) * (k - side_matrix_/2))) <= radius) {
           cont++;
           cloud->height = cont;
           cloud->points.resize(cont);
@@ -358,9 +358,12 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
   std::string training_validation;
   if(training){
     training_validation="/training";
+    std::cout<<"training"<<std::endl;
   }
   else{
     training_validation="/validation";
+    std::cout<<"validation"<<std::endl;
+
   }
 
   for(int i=0; i<num_objects/(cubes+cylinders+cones+spheres)/orientations; i++){
@@ -403,8 +406,8 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
             std::ostringstream id;
             id<<cont_;
 
-            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
-            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
             std::cout<<cont_<<" cube"<<std::endl;
           }
         }
@@ -445,8 +448,8 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
             std::ostringstream id;
             id<<cont_;
 
-            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
-            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
             std::cout<<cont_<<" cylinder"<<std::endl;
           }
         }
@@ -489,8 +492,8 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
             std::ostringstream id;
             id<<cont_;
 
-            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
-            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
             std::cout<<cont_<<" cone"<<std::endl;
           }
         }
@@ -531,8 +534,8 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
             std::ostringstream id;
             id<<cont_;
 
-            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
-            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
             std::cout<<cont_<<" sphere"<<std::endl;
           }
         }
@@ -546,16 +549,20 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
   std::string training_validation;
   if(training){
     training_validation="/training";
+    std::cout<<"training"<<std::endl;
   }
   else{
     training_validation="/validation";
+    std::cout<<"validation"<<std::endl;
   }
 
   for(int i=0; i<num_objects/(cubes+cylinders+cones+spheres)/orientations; i++){
-    bool good=false;
-    while(!good){
 
-      for (int cube=0; cube<cubes; cube++){
+
+
+    for (int cube=0; cube<cubes; cube++){
+      bool good=false;
+      while(!good){
         float x=(((std::rand()%100)/100.0)*16)+4;
         float y=(((std::rand()%100)/100.0)*16)+4;
         float z=(((std::rand()%100)/100.0)*11)+4;
@@ -584,8 +591,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
             std::ostringstream id;
             id<<cont_;
 
-            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
-            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
             std::cout<<cont_<<" cube"<<std::endl;
           }
         }
@@ -619,8 +626,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
             std::ostringstream id;
             id<<cont_;
 
-            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
-            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
             std::cout<<cont_<<" cylinder"<<std::endl;
           }
         }
@@ -658,8 +665,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
             std::ostringstream id;
             id<<cont_;
 
-            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
-            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
             std::cout<<cont_<<" cone"<<std::endl;
           }
         }
@@ -694,8 +701,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
             std::ostringstream id;
             id<<cont_;
 
-            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".mat");
-            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".mat");
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
             std::cout<<cont_<<" sphere"<<std::endl;
           }
         }
