@@ -9,14 +9,14 @@ int main(int argc, char** argv){
   int cones=2;
   int spheres=1;
 
-  int workspace=100;
+  int workspace=60;
 
   std::string iterator="/first";
-  ObjectDatasetGenerator dataset("/home/penalvea/dataset/geometrics/general.txt", "/home/penalvea/dataset/geometrics", workspace);
-  dataset.change_sizes(80, 16, 80, 16, 60, 16, 80, 16, 24, 8);
+  ObjectDatasetGenerator dataset("/home/penalvea/dataset/geometrics/general.txt", "/home/penalvea/dataset2/geometrics", workspace);
+  dataset.change_sizes(40, 8, 40, 8, 30, 8, 40, 8, 12, 4);
 
-  while(!std::ifstream("/home/penalvea/dataset/stop")){
-    while(!std::ifstream("/home/penalvea/dataset/first") && !std::ifstream("/home/penalvea/dataset/stop")){
+  while(!std::ifstream("/home/penalvea/dataset2/stop")){
+    while(!std::ifstream("/home/penalvea/dataset2/first") && !std::ifstream("/home/penalvea/dataset2/stop")){
       std::cout<<"entro"<<std::endl;
       sleep(10);
     }
@@ -25,18 +25,18 @@ int main(int argc, char** argv){
 
 
       std::string del;
-      del="rm -r /home/penalvea/dataset/geometrics/first/training/complete_objects/*";
+      del="rm -r /home/penalvea/dataset2/geometrics/first/training/complete_objects/*";
       system(del.c_str());
-      del="rm -r /home/penalvea/dataset/geometrics/first/training/side_objects/*";
+      del="rm -r /home/penalvea/dataset2/geometrics/first/training/side_objects/*";
       system(del.c_str());
-      del="rm -r /home/penalvea/dataset/geometrics/first/validation/complete_objects/*";
+      del="rm -r /home/penalvea/dataset2/geometrics/first/validation/complete_objects/*";
       system(del.c_str());
-      del="rm -r /home/penalvea/dataset/geometrics/first/validation/side_objects/*";
+      del="rm -r /home/penalvea/dataset2/geometrics/first/validation/side_objects/*";
       system(del.c_str());
       dataset.generateDatasetNoCamera(num_data_training, cubes, cylinders, cones, spheres, orientations, true, iterator);
       dataset.generateDatasetNoCamera(num_data_validation, cubes, cylinders, cones, spheres, orientations, false, iterator);
 
-      std::ofstream outfile ("/home/penalvea/dataset/first_ready");
+      std::ofstream outfile ("/home/penalvea/dataset2/first_ready");
       outfile.close();
     }
     while(!std::ifstream("/home/penalvea/dataset/second") && !std::ifstream("/home/penalvea/dataset/stop")){

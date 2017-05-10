@@ -573,6 +573,9 @@ void ObjectDatasetGenerator::generateDataset(int num_objects, int cubes, int cyl
 }
 
 void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes, int cylinders, int cones, int spheres, int orientations, bool training, std::string iterator){
+
+
+
   std::string training_validation;
   if(training){
     training_validation="/training";
@@ -582,6 +585,9 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
     training_validation="/validation";
     std::cout<<"validation"<<std::endl;
   }
+
+  std::ofstream types;
+  types.open((folder_+iterator+training_validation+"/types.txt").c_str(), std::ofstream::out | std::ofstream::trunc);
 
   for(int i=0; i<num_objects/(cubes+cylinders+cones+spheres)/orientations; i++){
 
@@ -614,6 +620,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
               general_<<cont_<<" "<<"cube trainig"<<" "<<x<<" "<<y<<" "<<z<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
             else
               general_<<cont_<<" "<<"cube validation"<<" "<<x<<" "<<y<<" "<<z<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            types<<cont_<<" "<<"cube"<<" "<<x<<" "<<y<<" "<<z<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
 
             std::ostringstream id;
             id<<cont_;
@@ -649,6 +657,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
               general_<<cont_<<" "<<"cylinder training"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
             else
               general_<<cont_<<" "<<"cylinder validation"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            types<<cont_<<" "<<"cylinder"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
 
             std::ostringstream id;
             id<<cont_;
@@ -689,6 +699,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
             else
               general_<<cont_<<" "<<"cone validation"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
 
+            types<<cont_<<" "<<"cone"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
             std::ostringstream id;
             id<<cont_;
 
@@ -725,6 +737,8 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
             else
               general_<<cont_<<" "<<"sphere validation"<<" "<<radius<<" "<<"-1"<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
 
+            types<<cont_<<" "<<"sphere"<<" "<<radius<<" "<<"-1"<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
             std::ostringstream id;
             id<<cont_;
 
@@ -736,5 +750,5 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
       }
     }
   }
-
+  types.close();
 }

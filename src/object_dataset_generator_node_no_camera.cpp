@@ -1,7 +1,7 @@
 #include "deep_grasp_planning/object_dataset_generator.h"
 
 int main(int argc, char** argv){
-  int num_data_training=480;
+  int num_data_training=240;
   int num_data_validation=40;
   int orientations=1;
   int cubes=3;
