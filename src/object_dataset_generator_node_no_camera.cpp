@@ -1,19 +1,18 @@
 #include "deep_grasp_planning/object_dataset_generator.h"
 
 int main(int argc, char** argv){
-  int num_data_training=240;
+  int num_data_training=480;
   int num_data_validation=40;
   int orientations=1;
-  int cubes=3;
-  int cylinders=2;
-  int cones=2;
-  int spheres=1;
+  int cubes=8;
+  int cylinders=0;
+  int cones=0;
+  int spheres=0;
 
   std::string iterator="/first";
   ObjectDatasetGenerator dataset("/home/penalvea/dataset/geometrics/general.txt", "/home/penalvea/dataset/geometrics", 30);
   while(!std::ifstream("/home/penalvea/dataset/stop")){
     while(!std::ifstream("/home/penalvea/dataset/first") && !std::ifstream("/home/penalvea/dataset/stop")){
-      std::cout<<"entro"<<std::endl;
       sleep(10);
     }
      std::remove("/home/penalvea/dataset/first");

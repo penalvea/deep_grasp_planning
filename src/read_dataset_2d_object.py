@@ -22,8 +22,9 @@ class DataSet(object):
         self.height_=int (height)
         self.width_=int (width)
         self.depth_=int (depth)
-        self.labels=labels
+        self.labels_=labels
 
+        self.data_=self.read_data()
 
         self.num_examples_=len(objects)
 
@@ -46,9 +47,9 @@ class DataSet(object):
         """Return the next `batch_size` examples from this data set."""
         start=self.index_in_epoch_
         if start==0:
-            shuffle(self.objects_)
+            shuffle(self.data_)
 
-        end=int(self.num_examples_-1)
+        end=int(self.num_examples_)
         self.index_in_epoch_+=batch_size
 
         if self.index_in_epoch_>=self.num_examples:
@@ -57,14 +58,67 @@ class DataSet(object):
             self.index_in_epoch_=0
         else:
             end=int(self.index_in_epoch_)
-        return self.read_input_and_label(start, end+1)
+        return self.get_input_and_label(start, end)
+
+    def get_input_and_label(self, start, end):
+        batch=self.data_[int(start):int(end)][:]
+        inputs=np.zeros((int(end-start), self.height_, self.width_, 1))
+        labels=np.zeros((int(end-start),4))
+        for i in range(1,len(batch)):
+            inputs[i]=batch[int(i)][0]
+            labels[i]=batch[int(i)][1]
+        return inputs, labels
+
+
+
+    def read_data(self):
+        data=[]
+
+        file_labels = open(self.labels_, "r")
+
+        for i in range(len(self.objects_)):
+            inputs = np.zeros([self.height_, self.width_, 1], "float")
+            labels = np.zeros([4], "float")
+            file_inputs = open(self.dataset_path_ + "/side_objects/" + self.objects_[i], "r")
+
+            line_input = file_inputs.readline()
+
+            values_input = line_input.split(" ")
+
+            for j in range(self.height_):
+                for k in range(self.width_):
+                    first = False
+                    for l in range(self.depth_):
+                        if not first:
+                            if values_input[(j * self.width_ * self.depth_) + (k * self.depth_) + l] == "1":
+                                inputs[j][k][0] = float(l) / self.depth_
+                                first = True
+
+            file_labels.seek(0)
+            for line_labels in file_labels:
+                values_labels = line_labels.split(" ")
+                if values_labels[0] == self.objects_[i].split(".")[0]:
+
+                    if values_labels[1] == "cube":
+                        labels[0] = 1.0
+                    elif values_labels[1] == "cylinder":
+                        labels[1] = 1.0
+                    elif values_labels[1] == "cone":
+                        labels[2] = 1.0
+                    elif values_labels[1] == "sphere":
+                        labels[3] = 1.0
+            data.append([inputs, labels])
+
+        return data
+
 
     def read_input_and_label(self, start, end):
         inputs=np.zeros([int(end-start), self.height_, self.width_, 1], "float")
 
         labels=np.zeros([int(end-start), 4], "float")
 
-        file_labels=open(self.labels, "r")
+
+        file_labels=open(self.labels_, "r")
 
 
         for i in range(int(start), int(end)):
@@ -89,6 +143,7 @@ class DataSet(object):
             for line_labels in file_labels:
                 values_labels=line_labels.split(" ")
                 if values_labels[0]==self.objects_[i].split(".")[0]:
+
                     if values_labels[1]=="cube":
                         labels[int (i-start)][0]=1.0
                     elif values_labels[1]=="cylinder":
@@ -105,9 +160,7 @@ class DataSet(object):
 
 def readNextDataSet(dataset_path, folder, height, width, depth):
 
-    train_list=[]
-    val_list=[]
-    num_object=0
+
     train_objects=listdir(dataset_path+folder+"/training/side_objects")
     validation_objects=listdir(dataset_path+folder+"/validation/side_objects")
     train_labels=dataset_path+folder+"/training/types.txt"

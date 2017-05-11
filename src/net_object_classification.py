@@ -73,14 +73,18 @@ def denselyConnLayerLineal(inp, layersIn, layersOut):
 
 
 def inference_4layers(inp):
-    conv1=convPoolLayer_Red(inp, 5, 1, 64, 5)
+    conv1=convPoolLayer_Red(inp, 5, 1, 20, 3)
     print conv1
-    conv2=convPoolLayer_Red(conv1, 3, 64, 128, 3)
+    conv2=convPoolLayer_Red(conv1, 3, 20, 40, 3)
     print conv2
+    conv3 = convPoolLayer(conv2, 3, 40, 80)
+    print conv3
+    conv4 = convPoolLayer(conv3, 3, 80, 160)
+    print conv4
 
 
-    flat=tf.reshape(conv2, [-1,4*4*128])
-    dens1=denselyConnLayer(flat, 4*4*128, 2048)
+    flat=tf.reshape(conv4, [-1,7*7*160])
+    dens1=denselyConnLayer(flat, 7*7*160, 2048)
     dens2=denselyConnLayerLineal(dens1, 2048, 4)
 
     return dens2
@@ -91,7 +95,7 @@ def inference_4layers(inp):
 
 [training, validation]=read_dataset_2d_object.readNextDataSet(dataset_path, folder, height, width, depth)
 
-print(validation)
+
 
 
 train_objects=training.num_examples
@@ -110,9 +114,16 @@ res=inference_4layers(x_input)
 
 
 loss_function = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=res))
-train_step = tf.train.AdamOptimizer(1e-4).minimize(loss_function)
+
+train_step = tf.contrib.layers.optimize_loss(loss_function, tf.contrib.framework.get_global_step(), optimizer='Adam', learning_rate=0.01)
+
+
+
+# train_step = tf.train.GradientDescentOptimizer(0.5).minimize(loss_function)
+
+#train_step = tf.train.AdamOptimizer(1e-4).minimize(loss_function)
 correct_prediction = tf.equal(tf.argmax(res, 1), tf.argmax(y_, 1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
 
 
 
@@ -133,17 +144,29 @@ i=0
 epochs=0
 start_time=init_time=time.time()
 now=datetime.datetime.now()
-bad=0
-unos = 0
+
+
+predictions=[]
+
+
+start_time = init_time = time.time()
+now=datetime.datetime.now()
 while(now<run_until):
     batch=training.next_batch(batch_size)
 
 
+    _ , output, label, result, correct_pred=sess.run([train_step, loss_function, y_, res, correct_prediction,], feed_dict={x: batch[0], y_: batch[1]})
+    acum+=output
+    predictions.extend(correct_pred)
 
+    if i>0 and i%int(train_objects/batch_size)==0:
+        new_time = time.time()
 
+        accuracy=np.mean(correct_pred,  dtype=np.float64)
 
-    _ , output, label, result, correct_pred, accu=sess.run([train_step, loss_function, y_, res, correct_prediction, accuracy], feed_dict={x: batch[0], y_: batch[1]})
-    print (output)
-    print (correct_pred)
-    print (accu)
+        print ("iteration %d, loss_function: %.6f, correct_predictions: %f, elapsed time: %.2f, iteration time: %.2f" % (i/int(train_objects/batch_size) , acum,  accuracy, (new_time-init_time)/60,  (new_time-start_time)/60))
+        start_time = time.time()
+        acum=0
 
+    i = i + 1
+    now = datetime.datetime.now()
