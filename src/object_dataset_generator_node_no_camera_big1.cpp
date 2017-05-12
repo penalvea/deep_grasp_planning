@@ -1,7 +1,7 @@
 #include "deep_grasp_planning/object_dataset_generator.h"
 
 int main(int argc, char** argv){
-  int num_data_training=8;
+  int num_data_training=480;
   int num_data_validation=8;
   int orientations=1;
   int cubes=3;
@@ -17,10 +17,9 @@ int main(int argc, char** argv){
 
   while(!std::ifstream("/home/penalvea/dataset2/stop")){
     while(!std::ifstream("/home/penalvea/dataset2/first") && !std::ifstream("/home/penalvea/dataset2/stop")){
-      std::cout<<"entro"<<std::endl;
       sleep(10);
     }
-     std::remove("/home/penalvea/dataset2/first");
+    std::remove("/home/penalvea/dataset2/first");
     if(!std::ifstream("/home/penalvea/dataset2/stop")){
 
 
@@ -39,29 +38,8 @@ int main(int argc, char** argv){
       std::ofstream outfile ("/home/penalvea/dataset2/first_ready");
       outfile.close();
     }
-    while(!std::ifstream("/home/penalvea/dataset2/second") && !std::ifstream("/home/penalvea/dataset2/stop")){
-      sleep(10);
-    }
-    std::remove("/home/penalvea/dataset2/second");
 
-    if(!std::ifstream("/home/penalvea/dataset2/stop")){
-      std::string del;
-      del="rm -r /home/penalvea/dataset2/geometrics/second/training/complete_objects/*";
-      system(del.c_str());
-      del="rm -r /home/penalvea/dataset2/geometrics/second/training/side_objects/*";
-      system(del.c_str());
-      del="rm -r /home/penalvea/dataset2/geometrics/second/validation/complete_objects/*";
-      system(del.c_str());
-      del="rm -r /home/penalvea/dataset2/geometrics/second/validation/side_objects/*";
-      system(del.c_str());
-      dataset.generateDatasetNoCamera(num_data_training, cubes, cylinders, cones, spheres, orientations, true, "/second");
-      dataset.generateDatasetNoCamera(num_data_validation, cubes, cylinders, cones, spheres, orientations, false, "/second");
-
-      std::ofstream outfile2 ("/home/penalvea/dataset2/second_ready");
-      outfile2.close();
-    }
   }
-
 
 
   return 0;

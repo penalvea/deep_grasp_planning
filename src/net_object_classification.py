@@ -17,19 +17,45 @@ write_objects1="/home/penalvea/dataset2/first"
 ready_objects1="/home/penalvea/dataset2/first_ready"
 write_objects2="/home/penalvea/dataset2/second"
 ready_objects2="/home/penalvea/dataset2/second_ready"
+write_objects3="/home/penalvea/dataset2/third"
+ready_objects3="/home/penalvea/dataset2/third_ready"
+write_objects4="/home/penalvea/dataset2/fourth"
+ready_objects4="/home/penalvea/dataset2/fourth_ready"
+write_objects5="/home/penalvea/dataset2/fifth"
+ready_objects5="/home/penalvea/dataset2/fifth_ready"
+write_objects6="/home/penalvea/dataset2/sixth"
+ready_objects6="/home/penalvea/dataset2/sixth_ready"
+write_objects7="/home/penalvea/dataset2/seventh"
+ready_objects7="/home/penalvea/dataset2/seventh_ready"
+write_objects8="/home/penalvea/dataset2/eighth"
+ready_objects8="/home/penalvea/dataset2/eighth_ready"
+write_objects9="/home/penalvea/dataset2/nineth"
+ready_objects9="/home/penalvea/dataset2/nineth_ready"
+write_objects10="/home/penalvea/dataset2/tenth"
+ready_objects10="/home/penalvea/dataset2/tenth_ready"
 
 
 folder1="/first"
 folder2="/second"
+folder3="/third"
+folder4="/fourth"
+folder5="/fifth"
+folder6="/sixth"
+folder7="/seventh"
+folder8="/eighth"
+folder9="/nineth"
+folder10="/tenth"
 
-iterations_next_folder=500
+
+
+iterations_next_folder=100
 
 iterations_complete=99999
 run_until=datetime.datetime(2018, 10, 29, 13, 30)
 
 output_path="/home/penalvea/NetResults/"
 
-batch_size=20.0
+batch_size=100.0
 
 
 
@@ -156,20 +182,98 @@ predictions=[]
 start_time = init_time = time.time()
 now=datetime.datetime.now()
 change=1
+folder=1
 while(now<run_until):
     if change==1:
-        if epochs%100==0:
+        if folder==1:
             while not os.path.isfile(ready_objects1):
               time.sleep(1)
             os.remove(ready_objects1)
-            open(write_objects2, 'a').close()
+
             [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder1, height, width, depth)
-        else:
+            open(write_objects1, 'a').close()
+            folder=2
+
+        elif folder==2:
             while not os.path.isfile(ready_objects2):
               time.sleep(1)
             os.remove(ready_objects2)
-            open(write_objects1, 'a').close()
+
             [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder2, height, width, depth)
+            open(write_objects2, 'a').close()
+            folder=3
+
+        elif folder==3:
+            while not os.path.isfile(ready_objects3):
+              time.sleep(1)
+            os.remove(ready_objects3)
+
+            [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder3, height, width, depth)
+            open(write_objects3, 'a').close()
+            folder=4
+
+        elif folder==4:
+            while not os.path.isfile(ready_objects4):
+              time.sleep(1)
+            os.remove(ready_objects4)
+
+            [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder4, height, width, depth)
+            open(write_objects4, 'a').close()
+            folder=5
+
+        elif folder==5:
+            while not os.path.isfile(ready_objects5):
+              time.sleep(1)
+            os.remove(ready_objects5)
+
+            [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder5, height, width, depth)
+            open(write_objects5, 'a').close()
+            folder=6
+
+        elif folder==6:
+            while not os.path.isfile(ready_objects6):
+              time.sleep(1)
+            os.remove(ready_objects6)
+
+            [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder6, height, width, depth)
+            open(write_objects6, 'a').close()
+            folder=7
+
+        elif folder==7:
+            while not os.path.isfile(ready_objects7):
+              time.sleep(1)
+            os.remove(ready_objects7)
+
+            [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder7, height, width, depth)
+            open(write_objects7, 'a').close()
+            folder=8
+
+        elif folder==8:
+            while not os.path.isfile(ready_objects8):
+              time.sleep(1)
+            os.remove(ready_objects8)
+
+            [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder8, height, width, depth)
+            open(write_objects8, 'a').close()
+            folder=9
+
+        elif folder==9:
+            while not os.path.isfile(ready_objects4):
+              time.sleep(1)
+            os.remove(ready_objects9)
+
+            [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder9, height, width, depth)
+            open(write_objects9, 'a').close()
+            folder=10
+
+        elif folder==10:
+            while not os.path.isfile(ready_objects10):
+              time.sleep(1)
+            os.remove(ready_objects10)
+
+            [training, validation] = read_dataset_2d_object.readNextDataSet(dataset_path, folder10, height, width, depth)
+            open(write_objects10, 'a').close()
+            folder=1
 
         train_objects = training.num_examples
         val_objects = validation.num_examples
@@ -194,7 +298,7 @@ while(now<run_until):
         start_time = time.time()
         acum=0
         epochs+=1
-        if epochs%50==0:
+        if epochs%iterations_next_folder==0:
             change=1
 
     i = i + 1
