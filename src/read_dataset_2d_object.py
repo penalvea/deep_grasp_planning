@@ -64,7 +64,7 @@ class DataSet(object):
         batch=self.data_[int(start):int(end)][:]
         inputs=np.zeros((int(end-start), self.height_, self.width_, 1))
         labels=np.zeros((int(end-start),4))
-        for i in range(1,len(batch)):
+        for i in range(0,len(batch)):
             inputs[i]=batch[int(i)][0]
             labels[i]=batch[int(i)][1]
         return inputs, labels
@@ -78,7 +78,7 @@ class DataSet(object):
 
         for i in range(len(self.objects_)):
             inputs = np.zeros([self.height_, self.width_, 1], "float")
-            labels = np.zeros([4], "float")
+            labels = np.zeros([4], "int32")
             file_inputs = open(self.dataset_path_ + "/side_objects/" + self.objects_[i], "r")
 
             line_input = file_inputs.readline()
@@ -101,15 +101,79 @@ class DataSet(object):
 
                     if values_labels[1] == "cube":
                         labels[0] = 1.0
+                        #labels[0]=0
                     elif values_labels[1] == "cylinder":
                         labels[1] = 1.0
+                        #labels[0] = 1
                     elif values_labels[1] == "cone":
                         labels[2] = 1.0
+                        #labels[0] = 2
                     elif values_labels[1] == "sphere":
                         labels[3] = 1.0
-            data.append([inputs, labels])
+                        #labels[0] = 3
+                    else:
+                        print ("ninguna")
 
+            data.append([inputs, labels])
+        file_labels.close()
+        file_inputs.close()
         return data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     def read_input_and_label(self, start, end):
@@ -152,6 +216,7 @@ class DataSet(object):
                         labels[int(i - start)][2] = 1.0
                     elif values_labels[1] == "sphere":
                         labels[int(i - start)][3] = 1.0
+
 
         return inputs, labels
 
