@@ -48,7 +48,7 @@ folder10="/tenth"
 
 
 
-iterations_next_folder=100
+iterations_next_folder=50
 
 iterations_complete=99999
 run_until=datetime.datetime(2018, 10, 29, 13, 30)
@@ -107,19 +107,19 @@ def denselyConnLayerLineal(inp, layersIn, layersOut):
 
 
 def inference_4layers(inp):
-    conv1=convPoolLayer_Red(inp, 5, 1, 20, 3)
+    conv1=convPoolLayer_Red(inp, 5, 1, 5, 3)
     print conv1
-    conv2=convPoolLayer_Red(conv1, 3, 20, 40, 3)
+    conv2=convPoolLayer_Red(conv1, 3, 5, 10, 3)
     print conv2
-    conv3 = convPoolLayer(conv2, 3, 40, 80)
+    conv3 = convPoolLayer(conv2, 3, 10, 20)
     print conv3
     #conv4 = convPoolLayer(conv3, 3, 80, 160)
     #print conv4
 
 
-    flat=tf.reshape(conv3, [-1,7*7*80])
-    dens1=denselyConnLayer(flat, 7*7*80, 2048)
-    dens2=denselyConnLayerLineal(dens1, 2048, 4)
+    flat=tf.reshape(conv3, [-1,7*7*20])
+    dens1=denselyConnLayer(flat, 7*7*20, 200)
+    dens2=denselyConnLayerLineal(dens1, 200, 4)
 
     return dens2
 
@@ -290,7 +290,7 @@ while(now<run_until):
     #print (label)
 
     if i>0 and i%int(train_objects/batch_size)==0:
-        new_time = time.time()
+	new_time = time.time()
 
         accuracy=np.mean(correct_pred,  dtype=np.float64)
 
@@ -300,6 +300,7 @@ while(now<run_until):
         epochs+=1
         if epochs%iterations_next_folder==0:
             change=1
+	    saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
 
     i = i + 1
     now = datetime.datetime.now()

@@ -76,15 +76,21 @@ class DataSet(object):
 
         file_labels = open(self.labels_, "r")
 
+	
         for i in range(len(self.objects_)):
             inputs = np.zeros([self.height_, self.width_, 1], "float")
             labels = np.zeros([4], "int32")
             file_inputs = open(self.dataset_path_ + "/side_objects/" + self.objects_[i], "r")
-
+	    #print(self.objects_[i])
+	    #print(file_inputs)
+	    #print (len(self.objects_), i)
             line_input = file_inputs.readline()
 
             values_input = line_input.split(" ")
+	    
 
+            print (self.objects_[i])
+            print (len(values_input))
             for j in range(self.height_):
                 for k in range(self.width_):
                     first = False
@@ -115,8 +121,8 @@ class DataSet(object):
                         print ("ninguna")
 
             data.append([inputs, labels])
-        file_labels.close()
-        file_inputs.close()
+        #file_labels.close()
+        #file_inputs.close()
         return data
 
 
