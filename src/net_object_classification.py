@@ -55,7 +55,7 @@ run_until=datetime.datetime(2018, 10, 29, 13, 30)
 
 output_path="/home/penalvea/NetResults/"
 
-batch_size=20.0
+batch_size=4.0
 
 
 
@@ -156,11 +156,11 @@ with tf.name_scope('cross_entropy'):
 with tf.name_scope('train'):
     train_step = tf.contrib.layers.optimize_loss(loss_function, tf.contrib.framework.get_global_step(), optimizer='Adam', learning_rate=0.001)
 
-epoch_loss=tf.Variable(100.0, name="epochLoss")
-tf.scalar_summary("epochLoss", epoch_loss)
+epoch_loss=tf.Variable(1.0, name="epochLoss")
+tf.summary.scalar("epochLoss", epoch_loss)
 
 epoch_accuracy=tf.Variable(0.0, name="epochAccuracy")
-tf.scalar_summary("epochAccuracy", epoch_accuracy)
+tf.summary.scalar("epochAccuracy", epoch_accuracy)
 
 # train_step = tf.train.GradientDescentOptimizer(0.5).minimize(loss_function)
 
@@ -203,6 +203,7 @@ start_time = init_time = time.time()
 now=datetime.datetime.now()
 change=1
 folder=1
+objects=0
 while(now<run_until):
     if change==1:
         if folder==1:
@@ -303,8 +304,8 @@ while(now<run_until):
     batch=training.next_batch(batch_size)
 
     #print (batch[1])
-
-    _ , output, label, result, correct_pred=sess.run([train_step, loss_function, y_, res, correct_prediction], feed_dict={x: batch[0], y_: batch[1]})
+    objects+=len(batch[0])
+    _ , output, label, result, correct_pred, summary=sess.run([train_step, loss_function, y_, res, correct_prediction, merged], feed_dict={x: batch[0], y_: batch[1]})
     acum+=output
     predictions.extend(correct_pred)
 
@@ -317,27 +318,36 @@ while(now<run_until):
 
         accuracy=np.mean(correct_pred,  dtype=np.float64)
 	
-	sess.run(epoch_loss.assign(acum/int(train_objects/batch_size)))
-	sess.run(epoch_accuracy(accuracy))
+        sess.run(epoch_loss.assign(acum/objects))
+        sess.run(epoch_accuracy.assign(accuracy))
 	
-	epochs+=1
-	summary, acc, loss=sess.run([merged, epoch_accuracy, epoch_loss])
-	train_writer.add_summary(summary, epochs)
+        epochs+=1
+        train_writer.add_summary(summary, epochs)
 	
 
-        print ("iteration %d, loss_function: %.6f, correct_predictions: %f, elapsed time: %.2f, iteration time: %.2f" % (i/int(train_objects/batch_size) , acum,  accuracy, (new_time-init_time)/60,  (new_time-start_time)/60))
+        print ("iteration %d, loss_function: %.6f, correct_predictions: %f, elapsed time: %.2f, iteration time: %.2f" % (i/int(train_objects/batch_size) , acum/objects,  accuracy, (new_time-init_time)/60,  (new_time-start_time)/60))
         start_time = time.time()
         acum=0
+        objects=0
        
         if epochs%iterations_next_folder==0:
-            	change=0
-	    	saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
+            change=0
+            saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
 	
-	if epochs%10==0:
-		acum=0
-		predictions
-		for j in range(int(val_images/batch_size)):
-			batch=validation.next_batch(batch_size)
-			loss, acc=sess.run(loss_fucntion, correct_prediction), dict={x: batch[0],  y_:batch[1])
+        if epochs%10==0:
+            acum_test=0
+            objects_test=0
+            predictions_test=[]
+            for j in range(int(val_objects/batch_size)):
+                batch_test=validation.next_batch(batch_size)
+                loss_test, acc_test, summary=sess.run([loss_function, correct_prediction, merged], feed_dict={x: batch_test[0],  y_:batch_test[1]})
+                objects_test+=len(batch_test[0])
+                acum_test+=loss_test
+                predictions_test.extend(acc_test)
+            accuracy_test=np.mean(predictions_test, dtype=np.float64)
+            sess.run(epoch_loss.assign(acum_test/ objects_test))
+            sess.run(epoch_accuracy.assign(accuracy_test))
+            test_writer.add_summary(summary, epochs)
+            print ("Test:    iteration %d, loss_function: %.6f, correct_predictions: %f" % (epochs, acum_test/objects_test, accuracy_test))
     i = i + 1
     now = datetime.datetime.now()
