@@ -221,6 +221,7 @@ now=datetime.datetime.now()
 change=1
 folder=1
 objects=0
+best = 100.0
 while(now<run_until):
     if change==1:
         if folder==1:
@@ -335,6 +336,8 @@ while(now<run_until):
 
 
 
+
+
     if i>0 and i%int(train_objects/batch_size)==0:
 
 
@@ -365,7 +368,7 @@ while(now<run_until):
        
         if epochs%iterations_next_folder==0:
             change=0
-            saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
+            #saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
 	
         if epochs%10==0:
             acum_test=0
@@ -396,5 +399,8 @@ while(now<run_until):
             test_writer.add_summary(summary, epochs)
             print ("Test:    iteration %d, loss_function: %.6f" % (epochs, acum_test/objects_test))
             print ((height_acum_test / objects_test) * 16, (radius_acum_test / objects_test) * 6, (rot_x_acum_test / objects_test) * 3.1415, (rot_y_acum_test / objects_test) * 3.1415)
+            if best>(acum_test/objects_test):
+                best=(acum_test/objects_test)
+                saver.save(sess, output_path + "modelckp" + str(epochs) + ".ckpt")
     i = i + 1
     now = datetime.datetime.now()

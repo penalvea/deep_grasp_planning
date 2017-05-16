@@ -11,7 +11,7 @@ from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_f
 
 height, width, depth= 30, 30, 30
 
-dataset_path="/home/penalvea/cylinders/geometrics"
+dataset_path="/home/penalvea/cubes/geometrics"
 
 write_objects1="/home/penalvea/cubes/first"
 ready_objects1="/home/penalvea/cubes/first_ready"
@@ -135,10 +135,10 @@ def inference_4layers(inp):
 
 
     flat=tf.reshape(inp, [-1,30*30*1])
-    dens1=denselyConnLayer_sigmoid(flat, 30*30*1, 500, 'dense1_cylinder')
-    dens2 = denselyConnLayer_sigmoid(dens1, 500, 50, 'dense2_cylinder')
-    #dens3 = denselyConnLayer_sigomid(dens2, 1000, 100, 'dense3_cylinder')
-    lineal1=denselyConnLayerLineal(dens2, 50, 6, 'lineal1_cylinder')
+    dens1=denselyConnLayer_sigmoid(flat, 30*30*1, 500, 'dense1_cube')
+    dens2 = denselyConnLayer_sigmoid(dens1, 500, 50, 'dense2_cube')
+    #dens3 = denselyConnLayer_sigomid(dens2, 1000, 100, 'dense3_cube')
+    lineal1=denselyConnLayerLineal(dens2, 50, 6, 'lineal1_cube')
 
     return lineal1
 
@@ -230,6 +230,7 @@ now=datetime.datetime.now()
 change=1
 folder=1
 objects=0
+best=100.0
 while(now<run_until):
     if change==1:
         if folder==1:
@@ -380,7 +381,7 @@ while(now<run_until):
        
         if epochs%iterations_next_folder==0:
             change=0
-            saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
+            #saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
 	
         if epochs%10==0:
             acum_test=0
@@ -418,5 +419,9 @@ while(now<run_until):
             test_writer.add_summary(summary, epochs)
             print ("Test:    iteration %d, loss_function: %.6f" % (epochs, acum_test/objects_test))
             print ((x_acum_test / objects_test) * 16, (y_acum_test / objects_test) * 16, (z_acum_test / objects_test) * 11,(rot_x_acum_test / objects_test) * 3.1415, (rot_y_acum_test / objects_test) * 3.1415, (rot_z_acum_test / objects_test) * 3.1415)
+            if best>(acum_test/objects_test):
+                best=(acum_test/objects_test)
+                saver.save(sess, output_path + "modelckp" + str(epochs) + ".ckpt")
+
     i = i + 1
     now = datetime.datetime.now()
