@@ -77,7 +77,8 @@ class DataSet(object):
         file_labels = open(self.labels_, "r")
 
 	
-        for i in range(len(self.objects_)):
+        #for i in range(len(self.objects_)):
+	for i in range(100):
 	    if i%1000==0:
 		print(i)
             inputs = np.zeros([self.height_, self.width_, 1], "float")

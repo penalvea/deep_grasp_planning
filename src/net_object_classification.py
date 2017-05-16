@@ -114,19 +114,19 @@ def denselyConnLayerLineal(inp, layersIn, layersOut, name):
 
 
 def inference_4layers(inp):
-    conv1=convPoolLayer_Red(inp, 3, 1, 4, 3, 'conv1')
+    conv1=convPoolLayer_Red(inp, 5, 1, 8, 3, 'conv1')
     print conv1
-    conv2=convPoolLayer_Red(conv1, 3, 4, 8, 3, 'conv2')
+    conv2=convPoolLayer_Red(conv1, 3, 8, 12, 3, 'conv2')
     print conv2
-    #conv3 = convPoolLayer(conv2, 3, 8, 16)
-    #print conv3
+    conv3 = convPoolLayer(conv2, 3, 12, 16, 'conv3')
+    print conv3
     #conv4 = convPoolLayer(conv3, 3, 80, 160)
     #print conv4
 
 
-    flat=tf.reshape(conv2, [-1,4*4*8])
-    dens1=denselyConnLayer(flat, 4*4*8, 50, 'dense1')
-    lineal1=denselyConnLayerLineal(dens1, 50, 4, 'lineal1')
+    flat=tf.reshape(conv3, [-1,4*4*16])
+    dens1=denselyConnLayer(flat, 4*4*16, 100, 'dense1')
+    lineal1=denselyConnLayerLineal(dens1, 100, 4, 'lineal1')
 
     return lineal1
 
