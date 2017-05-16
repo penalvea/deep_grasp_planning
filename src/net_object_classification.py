@@ -9,7 +9,7 @@ import os.path
 from tensorflow.contrib import learn
 from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_fn_lib
 
-height, width, depth= 60, 60, 60
+height, width, depth= 30, 30, 30
 
 dataset_path="/home/penalvea/dataset2/geometrics"
 
@@ -55,7 +55,7 @@ run_until=datetime.datetime(2018, 10, 29, 13, 30)
 
 output_path="/home/penalvea/NetResults/"
 
-batch_size=100.0
+batch_size=20.0
 
 
 
@@ -70,58 +70,65 @@ def bias_variable(shape):
 
 
 
-def convPoolLayer_Red(inp, size, layersIn, layersOut,sizeRed):
-    w_conv=weight_variable([size, size, layersIn, layersOut])
-    b_conv=bias_variable([layersOut])
+def convPoolLayer_Red(inp, size, layersIn, layersOut,sizeRed, name):
+    with tf.name_scope(name) as scope:
+        w_conv=weight_variable([size, size, layersIn, layersOut])
+        b_conv=bias_variable([layersOut])
 
-    conv=tf.nn.relu(tf.nn.conv2d(inp, w_conv, strides=[1,1,1,1], padding="SAME")+b_conv)
+        conv=tf.nn.relu(tf.nn.conv2d(inp, w_conv, strides=[1,1,1,1], padding="SAME")+b_conv)
+        tf.summary.histogram(name + "/Filters", w_conv)
 
-    pool=tf.nn.max_pool(conv, ksize=[1, sizeRed, sizeRed, 1], strides=[1, sizeRed, sizeRed, 1], padding="SAME")
+        pool=tf.nn.max_pool(conv, ksize=[1, sizeRed, sizeRed, 1], strides=[1, sizeRed, sizeRed, 1], padding="SAME")
 
     return pool
 
 
-def convPoolLayer(inp, size, layersIn, layersOut):
-    w_conv = weight_variable([size, size, layersIn, layersOut])
-    b_conv = bias_variable([layersOut])
-
-    conv = tf.nn.relu(tf.nn.conv2d(inp, w_conv, strides=[1, 1, 1, 1], padding="SAME") + b_conv)
+def convPoolLayer(inp, size, layersIn, layersOut, name):
+    with tf.name_scope(name) as scope:
+        w_conv = weight_variable([size, size, layersIn, layersOut])
+        b_conv = bias_variable([layersOut])
+        tf.summary.histogram(name + "/Filters", w_conv)
+        conv = tf.nn.relu(tf.nn.conv2d(inp, w_conv, strides=[1, 1, 1, 1], padding="SAME") + b_conv)
     return conv
 
 
-def denselyConnLayer(inp, layersIn, layersOut):
-    w_conv = weight_variable([layersIn, layersOut])
-    b_conv = bias_variable([layersOut])
+def denselyConnLayer(inp, layersIn, layersOut, name):
+    with tf.name_scope(name) as scope:
+        w_conv = weight_variable([layersIn, layersOut])
+        b_conv = bias_variable([layersOut])
+        tf.summary.histogram(name + "/Filters", w_conv)
+        dense=tf.nn.relu(tf.matmul(inp, w_conv)+b_conv)
+        dropout = tf.layers.dropout(inputs=dense, rate=0.4, training=True)
 
-    dense=tf.nn.relu(tf.matmul(inp, w_conv)+b_conv)
-
-    return dense
+    return dropout
 
 
-def denselyConnLayerLineal(inp, layersIn, layersOut):
-    w_conv = weight_variable([layersIn, layersOut])
-    b_conv = bias_variable([layersOut])
+def denselyConnLayerLineal(inp, layersIn, layersOut, name):
+    with tf.name_scope(name) as scope:
+        w_conv = weight_variable([layersIn, layersOut])
+        b_conv = bias_variable([layersOut])
+        tf.summary.histogram(name + "/Filters", w_conv)
 
-    dense = tf.matmul(inp, w_conv) + b_conv
+        dense = tf.matmul(inp, w_conv) + b_conv
     return dense
 
 
 def inference_4layers(inp):
-    conv1=convPoolLayer_Red(inp, 5, 1, 5, 3)
+    conv1=convPoolLayer_Red(inp, 3, 1, 4, 3, 'conv1')
     print conv1
-    conv2=convPoolLayer_Red(conv1, 3, 5, 10, 3)
+    conv2=convPoolLayer_Red(conv1, 3, 4, 8, 3, 'conv2')
     print conv2
-    conv3 = convPoolLayer(conv2, 3, 10, 20)
-    print conv3
+    #conv3 = convPoolLayer(conv2, 3, 8, 16)
+    #print conv3
     #conv4 = convPoolLayer(conv3, 3, 80, 160)
     #print conv4
 
 
-    flat=tf.reshape(conv3, [-1,7*7*20])
-    dens1=denselyConnLayer(flat, 7*7*20, 200)
-    dens2=denselyConnLayerLineal(dens1, 200, 4)
+    flat=tf.reshape(conv2, [-1,4*4*8])
+    dens1=denselyConnLayer(flat, 4*4*8, 50, 'dense1')
+    lineal1=denselyConnLayerLineal(dens1, 50, 4, 'lineal1')
 
-    return dens2
+    return lineal1
 
 
 
@@ -139,24 +146,34 @@ y_=tf.placeholder("float", shape=[None, 4])
 
 res=inference_4layers(x_input)
 
-print (res)
-print (y_)
 
-loss_function = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=res))
+with tf.name_scope('cross_entropy'):
+
+    loss_function = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=res))
+    tf.summary.scalar('cross_entropy', loss_function)
 #loss_function = -tf.reduce_sum(y_*tf.log(tf.nn.softmax(res) + 1e-10))
 
-train_step = tf.contrib.layers.optimize_loss(loss_function, tf.contrib.framework.get_global_step(), optimizer='Adam', learning_rate=0.01)
+with tf.name_scope('train'):
+    train_step = tf.contrib.layers.optimize_loss(loss_function, tf.contrib.framework.get_global_step(), optimizer='Adam', learning_rate=0.001)
 
 
 
 # train_step = tf.train.GradientDescentOptimizer(0.5).minimize(loss_function)
 
 #train_step = tf.train.AdamOptimizer(1e-4).minimize(loss_function)
-correct_prediction = tf.equal(tf.argmax(res, 1), tf.argmax(y_, 1))
+with tf.name_scope('accuracy'):
+    with tf.name_scope('correct_prediction'):
+        correct_prediction = tf.equal(tf.argmax(res, 1), tf.argmax(y_, 1))
+    with tf.name_scope('accuracy'):
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+tf.summary.scalar('accuracy', accuracy)
 
 
 
 
+
+merged=tf.summary.merge_all()
+train_writer=tf.summary.FileWriter("/home/penalvea/tensorboard/train", sess.graph)
 
 
 saver = tf.train.Saver()
@@ -258,7 +275,7 @@ while(now<run_until):
             folder=9
 
         elif folder==9:
-            while not os.path.isfile(ready_objects4):
+            while not os.path.isfile(ready_objects9):
               time.sleep(1)
             os.remove(ready_objects9)
 
@@ -284,13 +301,16 @@ while(now<run_until):
 
     #print (batch[1])
 
-    _ , output, label, result, correct_pred=sess.run([train_step, loss_function, y_, res, correct_prediction,], feed_dict={x: batch[0], y_: batch[1]})
+    _ , output, label, result, correct_pred, summary=sess.run([train_step, loss_function, y_, res, correct_prediction, merged], feed_dict={x: batch[0], y_: batch[1]})
     acum+=output
     predictions.extend(correct_pred)
+    train_writer.add_summary(summary, i)
     #print (label)
 
     if i>0 and i%int(train_objects/batch_size)==0:
-	new_time = time.time()
+
+
+        new_time = time.time()
 
         accuracy=np.mean(correct_pred,  dtype=np.float64)
 

@@ -89,38 +89,41 @@ class DataSet(object):
             values_input = line_input.split(" ")
 	    
 
-            print (self.objects_[i])
-            print (len(values_input))
-            for j in range(self.height_):
-                for k in range(self.width_):
-                    first = False
-                    for l in range(self.depth_):
-                        if not first:
-                            if values_input[(j * self.width_ * self.depth_) + (k * self.depth_) + l] == "1":
-                                inputs[j][k][0] = float(l) / self.depth_
-                                first = True
+            #print (self.objects_[i])
+            #print (len(values_input))
+            if len(values_input)<(self.height_*self.width_*self.depth_)+1:
+                print ("Error %d number of data" %  len(values_input))
+            else:
+                for j in range(self.height_):
+                    for k in range(self.width_):
+                        first = False
+                        for l in range(self.depth_):
+                            if not first:
+                                if values_input[(j * self.width_ * self.depth_) + (k * self.depth_) + l] == "1":
+                                    inputs[j][k][0] = float(l) / self.depth_
+                                    first = True
 
-            file_labels.seek(0)
-            for line_labels in file_labels:
-                values_labels = line_labels.split(" ")
-                if values_labels[0] == self.objects_[i].split(".")[0]:
+                file_labels.seek(0)
+                for line_labels in file_labels:
+                    values_labels = line_labels.split(" ")
+                    if values_labels[0] == self.objects_[i].split(".")[0]:
 
-                    if values_labels[1] == "cube":
-                        labels[0] = 1.0
-                        #labels[0]=0
-                    elif values_labels[1] == "cylinder":
-                        labels[1] = 1.0
-                        #labels[0] = 1
-                    elif values_labels[1] == "cone":
-                        labels[2] = 1.0
-                        #labels[0] = 2
-                    elif values_labels[1] == "sphere":
-                        labels[3] = 1.0
-                        #labels[0] = 3
-                    else:
-                        print ("ninguna")
+                        if values_labels[1] == "cube":
+                            labels[0] = 1.0
+                            #labels[0]=0
+                        elif values_labels[1] == "cylinder":
+                            labels[1] = 1.0
+                            #labels[0] = 1
+                        elif values_labels[1] == "cone":
+                            labels[2] = 1.0
+                            #labels[0] = 2
+                        elif values_labels[1] == "sphere":
+                            labels[3] = 1.0
+                            #labels[0] = 3
+                        else:
+                            print ("ninguna")
 
-            data.append([inputs, labels])
+                data.append([inputs, labels])
         #file_labels.close()
         #file_inputs.close()
         return data

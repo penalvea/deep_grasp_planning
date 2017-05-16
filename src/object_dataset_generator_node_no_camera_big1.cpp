@@ -1,7 +1,7 @@
 #include "deep_grasp_planning/object_dataset_generator.h"
 
 int main(int argc, char** argv){
-  int num_data_training=480;
+  int num_data_training=3000;
   int num_data_validation=8;
   int orientations=1;
   int cubes=3;
@@ -9,11 +9,11 @@ int main(int argc, char** argv){
   int cones=2;
   int spheres=1;
 
-  int workspace=60;
+  int workspace=30;
 
   std::string iterator="/first";
   ObjectDatasetGenerator dataset("/home/penalvea/dataset2/geometrics/general.txt", "/home/penalvea/dataset2/geometrics", workspace);
-  dataset.change_sizes(40, 8, 40, 8, 30, 8, 40, 8, 12, 4);
+  //dataset.change_sizes(40, 8, 40, 8, 30, 8, 40, 8, 12, 4);
 
   while(!std::ifstream("/home/penalvea/dataset2/stop")){
     while(!std::ifstream("/home/penalvea/dataset2/first") && !std::ifstream("/home/penalvea/dataset2/stop")){
