@@ -78,6 +78,8 @@ class DataSet(object):
 
 	
         for i in range(len(self.objects_)):
+	    if i%1000==0:
+		print(i)
             inputs = np.zeros([self.height_, self.width_, 1], "float")
             labels = np.zeros([4], "int32")
             file_inputs = open(self.dataset_path_ + "/side_objects/" + self.objects_[i], "r")

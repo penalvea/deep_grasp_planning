@@ -150,13 +150,17 @@ res=inference_4layers(x_input)
 with tf.name_scope('cross_entropy'):
 
     loss_function = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=res))
-    tf.summary.scalar('cross_entropy', loss_function)
+
 #loss_function = -tf.reduce_sum(y_*tf.log(tf.nn.softmax(res) + 1e-10))
 
 with tf.name_scope('train'):
     train_step = tf.contrib.layers.optimize_loss(loss_function, tf.contrib.framework.get_global_step(), optimizer='Adam', learning_rate=0.001)
 
+epoch_loss=tf.Variable(100.0, name="epochLoss")
+tf.scalar_summary("epochLoss", epoch_loss)
 
+epoch_accuracy=tf.Variable(0.0, name="epochAccuracy")
+tf.scalar_summary("epochAccuracy", epoch_accuracy)
 
 # train_step = tf.train.GradientDescentOptimizer(0.5).minimize(loss_function)
 
@@ -166,7 +170,6 @@ with tf.name_scope('accuracy'):
         correct_prediction = tf.equal(tf.argmax(res, 1), tf.argmax(y_, 1))
     with tf.name_scope('accuracy'):
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-tf.summary.scalar('accuracy', accuracy)
 
 
 
@@ -174,7 +177,7 @@ tf.summary.scalar('accuracy', accuracy)
 
 merged=tf.summary.merge_all()
 train_writer=tf.summary.FileWriter("/home/penalvea/tensorboard/train", sess.graph)
-
+test_writer=tf.summary.FileWriter("/home/penalvea/tensorboard/test")
 
 saver = tf.train.Saver()
 
@@ -301,10 +304,10 @@ while(now<run_until):
 
     #print (batch[1])
 
-    _ , output, label, result, correct_pred, summary=sess.run([train_step, loss_function, y_, res, correct_prediction, merged], feed_dict={x: batch[0], y_: batch[1]})
+    _ , output, label, result, correct_pred=sess.run([train_step, loss_function, y_, res, correct_prediction], feed_dict={x: batch[0], y_: batch[1]})
     acum+=output
     predictions.extend(correct_pred)
-    train_writer.add_summary(summary, i)
+
     #print (label)
 
     if i>0 and i%int(train_objects/batch_size)==0:
@@ -313,14 +316,28 @@ while(now<run_until):
         new_time = time.time()
 
         accuracy=np.mean(correct_pred,  dtype=np.float64)
+	
+	sess.run(epoch_loss.assign(acum/int(train_objects/batch_size)))
+	sess.run(epoch_accuracy(accuracy))
+	
+	epochs+=1
+	summary, acc, loss=sess.run([merged, epoch_accuracy, epoch_loss])
+	train_writer.add_summary(summary, epochs)
+	
 
         print ("iteration %d, loss_function: %.6f, correct_predictions: %f, elapsed time: %.2f, iteration time: %.2f" % (i/int(train_objects/batch_size) , acum,  accuracy, (new_time-init_time)/60,  (new_time-start_time)/60))
         start_time = time.time()
         acum=0
-        epochs+=1
+       
         if epochs%iterations_next_folder==0:
-            change=1
-	    saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
-
+            	change=0
+	    	saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
+	
+	if epochs%10==0:
+		acum=0
+		predictions
+		for j in range(int(val_images/batch_size)):
+			batch=validation.next_batch(batch_size)
+			loss, acc=sess.run(loss_fucntion, correct_prediction), dict={x: batch[0],  y_:batch[1])
     i = i + 1
     now = datetime.datetime.now()
