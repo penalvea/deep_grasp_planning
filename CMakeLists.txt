@@ -83,6 +83,12 @@ target_link_libraries(object_dataset_generator_no_camera_big9 ${PROJECT_NAME} ${
 add_executable(object_dataset_generator_no_camera_big10 src/object_dataset_generator_node_no_camera_big10.cpp)
 target_link_libraries(object_dataset_generator_no_camera_big10 ${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
+add_executable(object_dataset_generator_no_camera_cylinders src/object_dataset_generator_node_no_camera_cylinders.cpp)
+target_link_libraries(object_dataset_generator_no_camera_cylinders ${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_executable(object_dataset_generator_no_camera_cubes src/object_dataset_generator_node_no_camera_cubes.cpp)
+target_link_libraries(object_dataset_generator_no_camera_cubes ${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
 
 add_executable(read_mat_from_file src/read_mat_from_file.cpp)
 target_link_libraries(read_mat_from_file ${catkin_LIBRARIES} ${PCL_LIBRARIES})
