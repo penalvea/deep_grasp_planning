@@ -587,6 +587,7 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
   }
 
   std::ofstream types;
+  std::cout<<(folder_+iterator+training_validation+"/types.txt").c_str()<<std::endl;
   types.open((folder_+iterator+training_validation+"/types.txt").c_str(), std::ofstream::out | std::ofstream::trunc);
 
   for(int i=0; i<num_objects/(cubes+cylinders+cones+spheres)/orientations; i++){

@@ -12,7 +12,7 @@ int main(int argc, char** argv){
   int workspace=30;
 
   std::string iterator="/first";
-  ObjectDatasetGenerator dataset("/home/penalvea/cylinders/general.txt", "/home/penalvea/cylinders", workspace);
+  ObjectDatasetGenerator dataset("/home/penalvea/cylinders/general.txt", "/home/penalvea/cylinders/geometrics", workspace);
   //dataset.change_sizes(40, 8, 40, 8, 30, 8, 40, 8, 12, 4);
 
   /*while(!std::ifstream("/home/penalvea/cylinders/stop")){
@@ -24,13 +24,13 @@ int main(int argc, char** argv){
 
 
       std::string del;
-      del="rm -r /home/penalvea/cylinders/first/training/complete_objects/*";
+      del="rm -r /home/penalvea/cylinders/geometrics/first/training/complete_objects/*";
       system(del.c_str());
-      del="rm -r /home/penalvea/cylinders/first/training/side_objects/*";
+      del="rm -r /home/penalvea/cylinders/geometrics/first/training/side_objects/*";
       system(del.c_str());
-      del="rm -r /home/penalvea/cylinders/first/validation/complete_objects/*";
+      del="rm -r /home/penalvea/cylinders/geometrics/first/validation/complete_objects/*";
       system(del.c_str());
-      del="rm -r /home/penalvea/cylinders/first/validation/side_objects/*";
+      del="rm -r /home/penalvea/cylinders/geometrics/first/validation/side_objects/*";
       system(del.c_str());
       dataset.generateDatasetNoCamera(num_data_training, cubes, cylinders, cones, spheres, orientations, true, iterator);
       dataset.generateDatasetNoCamera(num_data_validation, cubes, cylinders, cones, spheres, orientations, false, iterator);

@@ -12,7 +12,7 @@ int main(int argc, char** argv){
   int workspace=30;
 
   std::string iterator="/first";
-  ObjectDatasetGenerator dataset("/home/penalvea/cubes/general.txt", "/home/penalvea/cubes", workspace);
+  ObjectDatasetGenerator dataset("/home/penalvea/cubes/general.txt", "/home/penalvea/cubes/geometrics", workspace);
   //dataset.change_sizes(40, 8, 40, 8, 30, 8, 40, 8, 12, 4);
 
   /*while(!std::ifstream("/home/penalvea/cylinders/stop")){
