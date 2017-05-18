@@ -90,5 +90,12 @@ add_executable(object_dataset_generator_no_camera_cubes src/object_dataset_gener
 target_link_libraries(object_dataset_generator_no_camera_cubes ${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 
+add_executable(object_dataset_generator_no_camera_cones src/object_dataset_generator_node_no_camera_cones.cpp)
+target_link_libraries(object_dataset_generator_no_camera_cones ${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+
 add_executable(read_mat_from_file src/read_mat_from_file.cpp)
 target_link_libraries(read_mat_from_file ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+
+

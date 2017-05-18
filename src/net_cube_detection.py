@@ -53,7 +53,7 @@ iterations_next_folder=50
 iterations_complete=99999
 run_until=datetime.datetime(2018, 10, 29, 13, 30)
 
-output_path="/home/penalvea/NetResults/cubes"
+output_path="/home/penalvea/NetResults/cubes/"
 
 batch_size=8.0
 
@@ -342,7 +342,7 @@ while(now<run_until):
     z_acum += errors[2]
     rot_x_acum+=errors[3]
     rot_y_acum+=errors[4]
-    rot_y_acum += errors[5]
+    rot_z_acum += errors[5]
 
 
 
@@ -405,7 +405,7 @@ while(now<run_until):
                 z_acum_test += errors[2]
                 rot_x_acum_test += errors[3]
                 rot_y_acum_test += errors[4]
-                rot_y_acum_test += errors[5]
+                rot_z_acum_test += errors[5]
 
 
             sess.run(epoch_loss.assign(acum_test/ objects_test))

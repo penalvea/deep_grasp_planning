@@ -81,6 +81,7 @@ class DataSet(object):
 
 
         end=len(self.objects_)
+	
         #for i in range(len(self.objects_)):
         for i in range(end):
             if i%1000==0:
@@ -124,8 +125,8 @@ class DataSet(object):
                             labels[3] = float(values_labels[5])/3.1415
                             labels[4] = float(values_labels[6])/3.1415
                             labels[5] = float(values_labels[7])/3.1415
-
-
+			    
+				
                         else:
                             print ("ninguna")
 
