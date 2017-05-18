@@ -5,8 +5,8 @@ int main(int argc, char** argv){
   int num_data_validation=40;
   int orientations=1;
   int cubes=8;
-  int cylinders=0;
-  int cones=0;
+  int cylinders=1;
+  int cones=1;
   int spheres=0;
 
   std::string iterator="/first";
