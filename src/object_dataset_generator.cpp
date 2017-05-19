@@ -194,6 +194,49 @@ std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::getSide
   }
   return side_mat;
 }
+
+std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::getHollowMatrix(std::vector< std::vector <std::vector< int > > > mat){
+  std::vector< std::vector <std::vector< int > > > hollow_mat;
+  for(int l=0; l<side_matrix_; l++){
+    std::vector<std::vector<int> > vec_vec;
+    for(int m=0; m<side_matrix_; m++){
+      std::vector<int> vec;
+      for(int n=0; n<side_matrix_; n++){
+        vec.push_back(0);
+      }
+      vec_vec.push_back(vec);
+    }
+    hollow_mat.push_back(vec_vec);
+  }
+
+
+  for(int i=0; i<mat.size(); i++){
+    for(int j=0; j<mat[0].size(); j++){
+      for(int k=0; k<mat[0][0].size(); k++){
+        if(mat[i][j][k]==1){
+          bool middle=true;
+          for(int l=-1; l<=1; l++){
+            for(int m=-1; m<=1; m++){
+              for(int n=-1; n<=1; n++){
+                if(mat[i+l][j+m][k+m]==0){
+                  middle=false;
+                }
+              }
+            }
+          }
+          if(middle)
+            hollow_mat[i][j][k]=0;
+          else
+            hollow_mat[i][j][k]=1;
+        }
+        else{
+          hollow_mat[i][j][k]=0;
+        }
+      }
+    }
+  }
+  return hollow_mat;
+}
 std::vector<int> ObjectDatasetGenerator::getDisplacement(std::vector< std::vector <std::vector< int > > > mat)
 {
   int max_x=0, max_y=0, max_z=0, min_x=side_matrix_, min_y=side_matrix_, min_z=side_matrix_;
@@ -361,6 +404,31 @@ std::vector< std::vector< std::vector <std::vector< int > > > > ObjectDatasetGen
 
   mats.push_back(moveMatrix(side_mat, displacement));
   mats.push_back(moveMatrix(mat, displacement));
+  return mats;
+}
+
+
+
+std::vector< std::vector< std::vector <std::vector< int > > > > ObjectDatasetGenerator::generateMatsNoCameraHollowObject(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, float rand_x, float rand_y, float rand_z){
+  std::vector< std::vector< std::vector <std::vector< int > > > > mats;
+
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_rotated=rotatePointCloud(cloud, rand_x, rand_y, rand_z);
+
+  std::vector< std::vector <std::vector< int > > > mat=getMatrix(cloud_rotated);
+  if(mat.size()==0){
+    mats.resize(0);
+    return mats;
+  }
+
+  std::vector< std::vector <std::vector< int > > > hollow_mat=getHollowMatrix(mat);
+
+
+
+
+
+  mats.push_back(hollow_mat);
+  mats.push_back(mat);
   return mats;
 }
 
@@ -753,3 +821,185 @@ void ObjectDatasetGenerator::generateDatasetNoCamera(int num_objects, int cubes,
   }
   types.close();
 }
+
+void ObjectDatasetGenerator::generateDatasetHollowObject(int num_objects, int cubes, int cylinders, int cones, int spheres, int orientations, bool training, std::string iterator){
+
+
+  std::string training_validation;
+  if(training){
+    training_validation="/training";
+    std::cout<<"training"<<std::endl;
+  }
+  else{
+    training_validation="/validation";
+    std::cout<<"validation"<<std::endl;
+  }
+
+  std::ofstream types;
+  std::cout<<(folder_+iterator+training_validation+"/types.txt").c_str()<<std::endl;
+  types.open((folder_+iterator+training_validation+"/types.txt").c_str(), std::ofstream::out | std::ofstream::trunc);
+
+  for(int i=0; i<num_objects/(cubes+cylinders+cones+spheres)/orientations; i++){
+
+
+
+    for (int cube=0; cube<cubes; cube++){
+      bool good=false;
+      while(!good){
+        float x=(((std::rand()%100)/100.0)*x_max_)+x_min_;
+        float y=(((std::rand()%100)/100.0)*y_max_)+y_min_;
+        float z=(((std::rand()%100)/100.0)*z_max_)+z_min_;
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cube_cloud=generateCube(x,y,z);
+
+        for(int orientation=0; orientation<orientations; orientation++){
+
+
+          float rand_x=(std::rand()%1000)/1000.0*3.1415;
+          float rand_y=(std::rand()%1000)/1000.0*3.1415;
+          float rand_z=(std::rand()%1000)/1000.0*3.1415;
+
+
+          std::vector< std::vector< std::vector <std::vector< int > > > > mats=generateMatsNoCameraHollowObject(cube_cloud, rand_x, rand_y, rand_z);
+          if(mats.size()!=0){
+            good=true;
+
+
+            cont_++;
+            if(training)
+              general_<<cont_<<" "<<"cube trainig"<<" "<<x<<" "<<y<<" "<<z<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+            else
+              general_<<cont_<<" "<<"cube validation"<<" "<<x<<" "<<y<<" "<<z<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            types<<cont_<<" "<<"cube"<<" "<<x<<" "<<y<<" "<<z<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            std::ostringstream id;
+            id<<cont_;
+
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
+            std::cout<<cont_<<" cube"<<std::endl;
+          }
+        }
+      }
+
+    }
+
+    for (int cylinder=0; cylinder<cylinders; cylinder++){
+      bool good=false;
+      while(!good){
+        float radius=(((std::rand()%100)/100.0)*radius_max_)+radius_min_;
+        float height=(((std::rand()%100)/100.0)*height_max_)+height_min_;
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cylinder_cloud=generateCylinder(radius,height);
+        for(int orientation=0; orientation<orientations; orientation++){
+
+          float rand_x=(std::rand()%1000)/1000.0*3.1415;
+          float rand_y=(std::rand()%1000)/1000.0*3.1415;
+          float rand_z=(std::rand()%1000)/1000.0*3.1415;
+
+
+          std::vector< std::vector< std::vector <std::vector< int > > > > mats=generateMatsNoCameraHollowObject(cylinder_cloud, rand_x, rand_y, rand_z);
+          if(mats.size()!=0){
+            good=true;
+            cont_++;
+            if(training)
+              general_<<cont_<<" "<<"cylinder training"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+            else
+              general_<<cont_<<" "<<"cylinder validation"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            types<<cont_<<" "<<"cylinder"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            std::ostringstream id;
+            id<<cont_;
+
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
+            std::cout<<cont_<<" cylinder"<<std::endl;
+          }
+        }
+
+
+      }
+
+    }
+    for (int cone=0; cone<cones; cone++){
+      bool good=false;
+      while(!good){
+        float radius=(((std::rand()%100)/100.0)*radius_max_)+radius_min_;
+        float height=(((std::rand()%100)/100.0)*height_max_)+height_min_;
+
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cone_cloud=generateCone(radius,height);
+        for(int orientation=0; orientation<orientations; orientation++){
+
+
+          float rand_x=(std::rand()%1000)/1000.0*3.1415;
+          float rand_y=(std::rand()%1000)/1000.0*3.1415;
+          float rand_z=(std::rand()%1000)/1000.0*3.1415;
+
+
+
+          std::vector< std::vector< std::vector <std::vector< int > > > > mats=generateMatsNoCameraHollowObject(cone_cloud, rand_x, rand_y, rand_z);
+          if(mats.size()!=0){
+            good=true;
+            cont_++;
+            if(training)
+              general_<<cont_<<" "<<"cone training"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+            else
+              general_<<cont_<<" "<<"cone validation"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            types<<cont_<<" "<<"cone"<<" "<<radius<<" "<<height<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            std::ostringstream id;
+            id<<cont_;
+
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
+            std::cout<<cont_<<" cone"<<std::endl;
+          }
+        }
+
+      }
+    }
+
+
+    for (int sphere=0; sphere<spheres; sphere++){
+      bool good=false;
+      while(!good){
+        float radius=(((std::rand()%100)/100.0)*radius_max_)+radius_min_;
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr sphere_cloud=generateSphere(radius);
+        for(int orientation=0; orientation<orientations; orientation++){
+
+
+          float rand_x=(std::rand()%1000)/1000.0*3.1415;
+          float rand_y=(std::rand()%1000)/1000.0*3.1415;
+          float rand_z=(std::rand()%1000)/1000.0*3.1415;
+
+
+          std::vector< std::vector< std::vector <std::vector< int > > > > mats=generateMatsNoCameraHollowObject(sphere_cloud, rand_x, rand_y, rand_z);
+          if(mats.size()!=0){
+            good=true;
+            cont_++;
+            if(training)
+              general_<<cont_<<" "<<"sphere training"<<" "<<radius<<" "<<"-1"<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+            else
+              general_<<cont_<<" "<<"sphere validation"<<" "<<radius<<" "<<"-1"<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            types<<cont_<<" "<<"sphere"<<" "<<radius<<" "<<"-1"<<" "<<"-1"<<" "<<rand_x<<" "<<rand_y<<" "<<rand_z<<std::endl;
+
+            std::ostringstream id;
+            id<<cont_;
+
+            writeMat(mats[0], folder_+iterator+training_validation+"/side_objects/"+id.str()+".txt");
+            writeMat(mats[1], folder_+iterator+training_validation+"/complete_objects/"+id.str()+".txt");
+            std::cout<<cont_<<" sphere"<<std::endl;
+          }
+        }
+      }
+    }
+  }
+  types.close();
+}
+

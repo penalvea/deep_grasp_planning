@@ -21,6 +21,7 @@ public:
   ObjectDatasetGenerator(std::string general_file, std::__cxx11::string folder, int side_matrix);
   void generateDataset(int num_objects, int cubes, int cylinders, int cones, int spheres, int orientations, bool training, std::string iterator);
   void generateDatasetNoCamera(int num_objects, int cubes, int cylinders, int cones, int spheres, int orientations, bool training, std::string iterator);
+  void generateDatasetHollowObject(int num_objects, int cubes, int cylinders, int cones, int spheres, int orientations, bool training, std::string iterator);
   void change_sizes(int x_max, int x_min, int y_max, int y_min, int z_max, int z_min, int height_max, int height_min, int radius_max, int radius_min);
 
 private:
@@ -32,6 +33,7 @@ private:
   pcl::PointCloud<pcl::PointXYZ>::Ptr translatePointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, float trans_x, float trans_y, float trans_z);
   std::vector< std::vector <std::vector< int > > > getMatrix(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
   std::vector< std::vector <std::vector< int > > > getSideMatrix(std::vector< std::vector <std::vector< int > > > mat);
+  std::vector< std::vector <std::vector< int > > > getHollowMatrix(std::vector< std::vector <std::vector< int > > > mat);
   std::vector<int> getDisplacement(std::vector< std::vector <std::vector< int > > > mat);
   std::vector< std::vector <std::vector< int > > > moveMatrix(std::vector< std::vector <std::vector< int > > > mat, std::vector<int> disp);
   int visualizeMat(std::vector< std::vector <std::vector< int > > > mat, float r, float g, float b, int start);
@@ -39,6 +41,7 @@ private:
   pcl::PointCloud<pcl::PointXYZ>::Ptr getSidePointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_rotated, std::vector<std::vector<std::vector<int> > > side_mat);
   std::vector< std::vector< std::vector <std::vector< int > > > > generateMats(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, float rand_x, float rand_y, float rand_z, float camera_rot_x, float camera_rot_y, float camera_rot_z, float camera_trans_x, float camera_trans_y, float camera_trans_z);
   std::vector< std::vector< std::vector <std::vector< int > > > > generateMatsNoCamera(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, float rand_x, float rand_y, float rand_z);
+  std::vector< std::vector< std::vector <std::vector< int > > > > generateMatsNoCameraHollowObject(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, float rand_x, float rand_y, float rand_z);
   void writeMat(std::vector< std::vector <std::vector< int > > > mat, const std::string file_name);
 
 
