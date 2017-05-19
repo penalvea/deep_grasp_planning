@@ -11,10 +11,10 @@ from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_f
 
 height, width, depth= 30, 30, 30
 
-dataset_path="/home/penalvea/dataset2/geometrics"
+dataset_path="/home/penalvea/hollows/geometrics"
 
-write_objects1="/home/penalvea/dataset2/first"
-ready_objects1="/home/penalvea/dataset2/first_ready"
+write_objects1="/home/penalvea/hollows/first"
+ready_objects1="/home/penalvea/hollows/first_ready"
 write_objects2="/home/penalvea/dataset2/second"
 ready_objects2="/home/penalvea/dataset2/second_ready"
 write_objects3="/home/penalvea/dataset2/third"
@@ -53,7 +53,7 @@ iterations_next_folder=50
 iterations_complete=99999
 run_until=datetime.datetime(2018, 10, 29, 13, 30)
 
-output_path="/home/penalvea/NetResults/"
+output_path="/home/penalvea/NetResults/hollows/"
 
 batch_size=4.0
 
@@ -114,19 +114,19 @@ def denselyConnLayerLineal(inp, layersIn, layersOut, name):
 
 
 def inference_4layers(inp):
-    conv1=convPoolLayer_Red(inp, 5, 1, 8, 3, 'conv1')
+    conv1=convPoolLayer_Red(inp, 5, 1, 4, 5, 'conv1_class')
     print conv1
-    conv2=convPoolLayer_Red(conv1, 3, 8, 12, 3, 'conv2')
+    conv2=convPoolLayer_Red(conv1, 3, 4, 8, 3, 'conv2_class')
     print conv2
-    conv3 = convPoolLayer(conv2, 3, 12, 16, 'conv3')
+    conv3 = convPoolLayer(conv2, 3, 8, 12, 'conv3_class')
     print conv3
     #conv4 = convPoolLayer(conv3, 3, 80, 160)
     #print conv4
 
 
-    flat=tf.reshape(conv3, [-1,4*4*16])
-    dens1=denselyConnLayer(flat, 4*4*16, 100, 'dense1')
-    lineal1=denselyConnLayerLineal(dens1, 100, 4, 'lineal1')
+    flat=tf.reshape(conv3, [-1,2*2*2*12])
+    dens1=denselyConnLayer(flat, 2*2*2*12, 20, 'dense1_class')
+    lineal1=denselyConnLayerLineal(dens1, 20, 4, 'lineal1_class')
 
     return lineal1
 
@@ -149,7 +149,8 @@ res=inference_4layers(x_input)
 
 with tf.name_scope('cross_entropy'):
 
-    loss_function = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=res))
+    #loss_function = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=res))
+    loss_function = tf.losses.softmax_cross_entropy(onehot_labels=y_, logits=res)
 
 #loss_function = -tf.reduce_sum(y_*tf.log(tf.nn.softmax(res) + 1e-10))
 
@@ -176,8 +177,8 @@ with tf.name_scope('accuracy'):
 
 
 merged=tf.summary.merge_all()
-train_writer=tf.summary.FileWriter("/home/penalvea/tensorboard/3DClassification/train", sess.graph)
-test_writer=tf.summary.FileWriter("/home/penalvea/tensorboard/3DClassification/test")
+train_writer=tf.summary.FileWriter("/home/penalvea/tensorboard/hollow/train", sess.graph)
+test_writer=tf.summary.FileWriter("/home/penalvea/tensorboard/hollow/test")
 
 saver = tf.train.Saver()
 
@@ -204,12 +205,14 @@ now=datetime.datetime.now()
 change=1
 folder=1
 objects=0
+best = 100.0
 while(now<run_until):
     if change==1:
         if folder==1:
+	    print (ready_objects1)
             while not os.path.isfile(ready_objects1):
               time.sleep(1)
-            os.remove(ready_objects1)
+            #os.remove(ready_objects1)
 
             [training, validation] = read_dataset_3d_object.readNextDataSet(dataset_path, folder1, height, width, depth)
             open(write_objects1, 'a').close()
@@ -246,14 +249,11 @@ while(now<run_until):
         train_writer.add_summary(summary, epochs)
 	
 
-        print ("iteration %d, loss_function: %.6f, correct_predictions: %f, elapsed time: %.2f, iteration time: %.2f" % (i/int(train_objects/batch_size) , acum/objects,  accuracy, (new_time-init_time)/60,  (new_time-start_time)/60))
+        print ("iteration %d, loss_function: %.6f, correct_predictions: %f, elapsed time: %.2f, iteration time: %.2f" % (i/int(objects/batch_size) , acum/objects,  accuracy, (new_time-init_time)/60,  (new_time-start_time)/60))
         start_time = time.time()
         acum=0
         objects=0
        
-        if epochs%iterations_next_folder==0:
-            change=0
-            saver.save(sess,output_path + "modelckp" + str(epochs) + ".ckpt")
 	
         if epochs%10==0:
             acum_test=0
@@ -270,5 +270,8 @@ while(now<run_until):
             sess.run(epoch_accuracy.assign(accuracy_test))
             test_writer.add_summary(summary, epochs)
             print ("Test:    iteration %d, loss_function: %.6f, correct_predictions: %f" % (epochs, acum_test/objects_test, accuracy_test))
+	    if best>(acum_test/objects_test):
+                best=(acum_test/objects_test)
+                saver.save(sess, output_path + "modelckp" + str(epochs) + ".ckpt")
     i = i + 1
     now = datetime.datetime.now()

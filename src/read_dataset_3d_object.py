@@ -24,9 +24,11 @@ class DataSet(object):
         self.depth_=int (depth)
         self.labels_=labels
 
+	self.num_examples_=len(objects)
+
         self.data_=self.read_data()
 
-        self.num_examples_=len(objects)
+        
 
         self.epochs_completed_=0
         self.index_in_epoch_=0
@@ -75,10 +77,14 @@ class DataSet(object):
         data=[]
 
         file_labels = open(self.labels_, "r")
-
 	
+	n_objects=10000
+	if(n_objects>len(self.objects_)):
+	    end=len(self.objects_)
+	else:
+	    end=n_objects
         #for i in range(len(self.objects_)):
-	for i in range(100):
+	for i in range(end):
 	    if i%1000==0:
 		print(i)
             inputs = np.zeros([self.height_, self.width_, self.depth_, 1], "float")
@@ -125,8 +131,7 @@ class DataSet(object):
                             print ("ninguna")
 
                 data.append([inputs, labels])
-        #file_labels.close()
-        #file_inputs.close()
+            self.num_examples_=len(data)
         return data
 
 
