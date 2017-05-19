@@ -218,7 +218,10 @@ std::vector< std::vector <std::vector< int > > > ObjectDatasetGenerator::getHoll
           for(int l=-1; l<=1; l++){
             for(int m=-1; m<=1; m++){
               for(int n=-1; n<=1; n++){
-                if(mat[i+l][j+m][k+m]==0){
+		if(i==0 || i==side_matrix_-1 || j==0 || j==side_matrix_-1 || k==0 || k==side_matrix_-1){
+		  middle=false;	
+		}
+                else if(mat[i+l][j+m][k+m]==0){
                   middle=false;
                 }
               }
@@ -420,9 +423,8 @@ std::vector< std::vector< std::vector <std::vector< int > > > > ObjectDatasetGen
     mats.resize(0);
     return mats;
   }
-
   std::vector< std::vector <std::vector< int > > > hollow_mat=getHollowMatrix(mat);
-
+  
 
 
 
